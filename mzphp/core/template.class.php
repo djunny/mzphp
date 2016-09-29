@@ -446,7 +446,7 @@ class template {
                 $c = preg_replace('#[\\t ]{2,}#is', ' ', $c);
                 $c = preg_replace('#\/\*[\s\S]*?\*\/#is', '', $c);
             } elseif (stripos($c, '<style') !== false) {
-                self::css_compress($c);
+                $this->css_compress($c);
             } else if (!$skip) {
                 while (strpos($c, "\r") !== false) {
                     $c = str_replace("\r", "\n", $c);
