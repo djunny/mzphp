@@ -316,7 +316,7 @@ class template {
             // template , include file 减少 io
             $s = preg_replace_callback("#<!--{template\s+([^}]*?)}-->#i", array($this, 'get_tpl'), $s);
         }
-        log::info('loadTemplatePluginStart');
+        //log::info('loadTemplatePluginStart');
         // 加载插件开始执行，load plugin to complie
         if (!empty($this->conf['tpl']['plugins'])) {
             //$this->conf['tpl']['plugins'] = array('class' => 'class_real_path');
@@ -332,7 +332,7 @@ class template {
                 self::$plugin_loaded[$plugin] && self::$plugin_loaded[$plugin]->process($s);
             }
         }
-        log::info('loadTemplatePluginEnd');
+        //log::info('loadTemplatePluginEnd');
 
         // 替换区块元素，compile block from template
         $this->compile_block($s);
@@ -423,10 +423,9 @@ class template {
         if (strpos($html_source, '<!--') !== false) {
             $html_source = preg_replace('#<!--[\s\S]*?-->#is', '', $html_source);
         }
-        // split by keep tag
         $chunks               = preg_split('#(<(' . implode('|', $keep_tag) . ')[\s\S]*?<\/\2>)#is', $html_source, -1, PREG_SPLIT_DELIM_CAPTURE);
         $compress_html_source = '';
-        // compress html
+        // compress html : clean new line , clean tab, clean comment
         $skip = 0;
         foreach ($chunks as $index => $c) {
             if ($skip) {
@@ -445,10 +444,9 @@ class template {
                 // remove extra whitespace
                 $c = preg_replace('#\\n[\\t ]+#is', "\n", $c);
                 $c = preg_replace('#[\\t ]{2,}#is', ' ', $c);
-                // remove block comment
                 $c = preg_replace('#\/\*[\s\S]*?\*\/#is', '', $c);
             } elseif (stripos($c, '<style') !== false) {
-                $this->css_compress($c);
+                self::css_compress($c);
             } else if (!$skip) {
                 while (strpos($c, "\r") !== false) {
                     $c = str_replace("\r", "\n", $c);
@@ -457,19 +455,15 @@ class template {
                     $c = str_replace("\n\n", "\n", $c);
                 }
                 // remove inter-tag newline
-                $c = preg_replace('#>\\n<(/?\w)#is', '><$1', $c);
+                $c = preg_replace('#>[\n\s]+<(/?\w)#is', '><$1', $c);
                 // remove extra whitespace
-                $c = preg_replace('#\\n[\\t ]+#is', "", $c);
+                $c = preg_replace('#\\n[\\t ]+#is', " ", $c);
                 $c = preg_replace('#[\\t ]{2,}#', ' ', $c);
-                // remove CSS & JS comments
-                if (strpos($c, '/*') !== false) {
-                    $c = preg_replace('#/\*[\s\S]*?\*/#i', '', $c);
-                }
                 while (strpos($c, "\n\n") !== false) {
                     $c = str_replace("\n\n", "\n", $c);
                 }
             }
-            // store compress result
+            //short tag
             $compress_html_source .= trim($c);
         }
         $html_source = $compress_html_source;
