@@ -441,10 +441,17 @@ class template {
                 }
             }
             if (stripos($c, '<script') !== false) {
+                while (strpos($c, "\r") !== false) {
+                    $c = str_replace("\r", "\n", $c);
+                }
                 // remove extra whitespace
                 $c = preg_replace('#\\n[\\t ]+#is', "\n", $c);
                 $c = preg_replace('#[\\t ]{2,}#is', ' ', $c);
                 $c = preg_replace('#\/\*[\s\S]*?\*\/#is', '', $c);
+                //$c = preg_replace('#(\\n|)([\\}\\{\,;\\)])\s*#is', "$1$2", $c);
+                while (strpos($c, "\n\n") !== false) {
+                    $c = str_replace("\n\n", "\n", $c);
+                }
             } elseif (stripos($c, '<style') !== false) {
                 $this->css_compress($c);
             } else if (!$skip) {
