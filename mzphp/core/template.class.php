@@ -183,7 +183,7 @@ class template {
         }
 
         // compress html
-        if (!DEBUG && $this->conf['html_no_compress']) {
+        if (!DEBUG && !$this->conf['html_no_compress']) {
             $this->compress_html($body);
         }
         // make file
