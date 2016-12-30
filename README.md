@@ -11,18 +11,23 @@ enphp 在线加密：
 [2016.12.30]
 新增：
 1. 增加 domain router 可加入默认 request 参数
+2. 增加模板引擎压缩 html.
+3. CACHE 类可同时实例化多个缓存 CACHE::instance('xxx')
+4. 增加 DB::select() 查询列表，可返回索引下标
+5. 增加 hook 方法，可用于实现插件或者扩展。
+6. base_control 加入缓存页面功能，在 control 对应方法中调用 $this->cache_page($cache_key, $cache_time = 60);，即可缓存当前页面渲染结果，下次访问直接读内存。
+7. 模板 static 语法增加自动检测同目录 xxx.min.js，用于自动压缩后，可不需要调用 mzphp 的 js 压缩引擎，获得更高性能。
 
 修复：
 1. 修复 abs_url dir='0' 的问题
 2. 修复 pdo_mysql 在 PHP7下的BUG
 3. 重命名 hook 缓存文件
 4. 修复在 cli 命令行下运行脚本太久导致运行时间显示不正确的问题.
+5. 修复 spider 类在自动识别 charset 时对于 jpg 图片有 xml 代码时的问题，$header 传入 array('charset'=>'bin') 关闭自动识别 html charset功能。
 
 优化：
-1. 优化 CACHE 类可同时实例化多个缓存 CACHE::instance('xxx')
-2. 优化 redis 类的性能，更加友好支持 redis 扩展方法,例如 CACHE::instance('redis')->lpop();
-3. 优化模板引擎对 html 压缩
-4. 优化 mysql build_where 方法
+1. 优化 redis 类的性能，更加友好支持 redis 扩展方法,例如 CACHE::instance('redis')->lpop();
+2. 优化 mysql build_where 方法
 
 [2016.1.27]
 
