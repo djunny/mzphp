@@ -201,7 +201,7 @@ defined('ROOT_PATH') || exit;
             <ol class="ktun">
                 <?php
                 $tdclass = '';
-                $class = 'tclass2';
+                $class   = 'tclass2';
                 ($class == 'tclass') ? $class = 'tclass2' : $class = 'tclass';
                 foreach ($_SERVER['sqls'] as $dkey => $debug) {
                     echo '<table class="' . $class . '"><tr><th rowspan="2" width="20">' . ($dkey + 1) . '</th><td width="100">' . $debug['time'] . ' ms</td><td class="bold">' . core::htmlspecialchars($debug['sql']) . '</td></tr>';

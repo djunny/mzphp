@@ -1,6 +1,7 @@
 <?php
 
-class log {
+class log
+{
     /**
      * @var int log file name
      */
@@ -17,11 +18,12 @@ class log {
      */
     public static function set_logfile($file) {
         if ($file == 1) {
-            $file = ROOT_PATH.'data/log/'.date('Y-m-d').'.log';
+            $file = ROOT_PATH . 'data/log/' . date('Y-m-d') . '.log';
         }
         self::$log_file = $file;
-        self::$log_fp = fopen($file, 'a+');
+        self::$log_fp   = fopen($file, 'a+');
     }
+
     /**
      * alias set log file
      *
@@ -35,6 +37,7 @@ class log {
      * dump variable for log
      *
      * @param $data
+     *
      * @return string
      */
     public static function dump_var($data) {
@@ -84,7 +87,17 @@ class log {
         for ($i = 0, $l = $arg_count; $i < $l; $i++) {
             $log .= self::dump_var($arg_list[$i]);
         }
-        $log .= '[' . core::usedtime() . "ms]";
+        $usetime = core::usedtime();
+        if ($usetime > 1000 * 360 * 60) {
+            $usetime = round($usetime / (1000 * 60), 3) . 'h';
+        } else if ($usetime > 1000 * 360) {
+            $usetime = round($usetime / (1000 * 60), 3) . 'm';
+        } else if ($usetime > 1000 * 60) {
+            $usetime = round($usetime / 1000, 3) . 's';
+        } else {
+            $usetime = $usetime . 'ms';
+        }
+        $log .= '[' . $usetime . "]";
         $log = "[" . date('H:i:s') . "]" . $log . "\r\n";
         if (self::$log_fp) {
             fputs(self::$log_fp, $log);
@@ -94,7 +107,7 @@ class log {
         } else {
             if (isset($_SERVER['log'])) {
                 $_SERVER['log'] = array(
-                    'info' => array(),
+                    'info'  => array(),
                     'error' => array(),
                 );
             }

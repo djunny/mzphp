@@ -1,6 +1,7 @@
 <?php
 
-class CACHE {
+class CACHE
+{
     /**
      * cache type
      *
@@ -16,15 +17,15 @@ class CACHE {
     /**
      * cache config
      *
-     * @var string
+     * @var array
      */
     private static $cache_conf = array();
     /**
      * instance of cache
      *
-     * @var null
+     * @var array
      */
-    private static $instance = NULL;
+    public static $instance = array();
 
     /**
      * init cache
@@ -32,32 +33,45 @@ class CACHE {
      * @param $conf
      */
     public static function init_cache_config(&$conf) {
-        self::$cache_conf = $conf;
+        self::$cache_conf = &$conf;
     }
 
     /**
      * @return object instance of cache
      */
-    public static function instance() {
-        if (is_null(self::$instance)) {
+    public static function instance($cache_name = '') {
+        static $default_cache = NULL;
+        if ($default_cache && !$cache_name) {
+            $cache_name = $default_cache;
+        }
+        if (is_null($default_cache) || !isset(self::$instance[$cache_name])) {
             //find cache engine
             foreach (self::$cache_conf as $type => $conf) {
-                $cache_enigne = $type . '_cache';
-                self::$cache_type = $type;
-                self::$cache_pre = isset($conf['pre']) ? $conf['pre'] : '';
-                self::$instance = new $cache_enigne($conf);
-                if (!self::$instance->init()) {
-                    self::$instance = false;
-                } else {
-                    break;
+                // default cache is first cache conf key
+                if (is_null($default_cache)) {
+                    $default_cache = $type;
+                    !$cache_name && $cache_name = $type;
                 }
+                if ($cache_name != $type) {
+                    continue;
+                }
+                $cache_enigne                = $type . '_cache';
+                self::$cache_type            = $type;
+                self::$cache_pre             = isset($conf['pre']) ? $conf['pre'] : '';
+                self::$instance[$cache_name] = new $cache_enigne($conf);
+                if (self::$instance[$cache_name]->init()) {
+                    return self::$instance[$cache_name];
+                }
+                self::$instance[$cache_name] = false;
+                break;
             }
         }
-        return self::$instance;
+        return self::$instance[$cache_name];
     }
 
     /**
      * @param $key
+     *
      * @return string
      */
     public static function key($key) {
@@ -76,14 +90,20 @@ class CACHE {
      *
      * @return bool
      */
-    public static function opened() {
-        return self::instance() == false ? false : true;
+    public static function opened($cache_name = '') {
+        if (!isset(self::$instance[$cache_name])) {
+            $instance = self::instance($cache_name);
+        } else {
+            $instance = &self::$instance[$cache_name];
+        }
+        return $instance !== false;
     }
 
     /**
      * get cache by key
      *
      * @param $key
+     *
      * @return mixed
      */
     public static function get($key) {
@@ -99,6 +119,7 @@ class CACHE {
      * @param     $key
      * @param     $val
      * @param int $expire
+     *
      * @return mixed
      */
     public static function set($key, $val, $expire = 0) {
@@ -114,6 +135,7 @@ class CACHE {
      * @param $key
      * @param $val
      * @param $expire
+     *
      * @return mixed
      */
     public static function update($key, $val, $expire) {
@@ -127,6 +149,7 @@ class CACHE {
      * update cache
      *
      * @param $key
+     *
      * @return mixed
      */
     public static function delete($key) {
@@ -140,6 +163,7 @@ class CACHE {
      * truncate cache
      *
      * @param string $pre
+     *
      * @return mixed
      */
     public static function truncate($pre = '') {
@@ -156,10 +180,11 @@ class CACHE {
      * @param int $expire         expire time form lock
      * @param int $max_lock_count max lock count
      * @param int $lock_step_time lock step time
+     *
      * @return bool
      */
     public static function lock($key, $expire = 10000, $max_lock_count = 1000, $lock_step_time = 5000) {
-        $key = '_lock_' . $key;
+        $key         = '_lock_' . $key;
         $sleep_count = 0;
         !$lock_step_time && $lock_step_time = 5000;
 

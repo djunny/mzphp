@@ -3,7 +3,8 @@
 /**
  * Class base_model
  */
-class base_model {
+class base_model
+{
 
     public $table;
     public $primary_key;
@@ -11,8 +12,8 @@ class base_model {
     /**
      * construct base_db
      *
-     * @param $table       table name
-     * @param $primary_key primary key
+     * @param $table       string table name
+     * @param $primary_key int|mixed primary key
      */
     function __construct($table, $primary_key) {
         $this->table       = $table;
@@ -76,7 +77,7 @@ class base_model {
     /**
      * get recode
      *
-     * @param $id id or id array
+     * @param $id int|mixed id or id array
      *
      * @return array array or single record
      */

@@ -3,7 +3,8 @@
 /**
  * Class base_control
  */
-class base_control {
+class base_control
+{
 
     /**
      * config for current
@@ -92,7 +93,7 @@ class base_control {
         $exists = CACHE::get($cache_key);
         // set cache header for browser
         // cache exists
-        if ($exists !== false) {
+        if ($exists !== false && !is_null($exists)) {
             // get expire and return 304 Not Modified header
             $file_time = $exists['time'];
             $gmt_mtime = gmdate('D, d M Y H:i:s', $file_time) . ' GMT';

@@ -3,7 +3,8 @@
 /**
  * Class template
  */
-class template {
+class template
+{
 
     /**
      * plugin class loaded
@@ -253,7 +254,6 @@ class template {
     public function get_compile_tpl($filename) {
         $obj_file = $this->get_complie_name($filename);
         if (!$this->force) return $obj_file;
-
         $exists_file = is_file($obj_file);
         // 搜索目录
         $file = '';
@@ -418,7 +418,15 @@ class template {
      */
     private function compress_html(&$html_source) {
         // keep tag
-        $keep_tag = array('pre', 'textarea', 'script', 'style');
+        $keep_tag = array('pre', 'textarea', 'script', 'style', 'code');
+        // replace if
+        $special_tags = array();
+        if (strpos($html_source, '<!--[if') !== false) {
+            preg_match_all('#<!--\[if[\s\S]*?endif\]-->#is', $html_source, $special_tags);
+            foreach ($special_tags as $k => $v) {
+                $html_source = str_replace($v[0], '[[special-tag' . $k . ']]', $html_source);
+            }
+        }
         // replace comment first
         if (strpos($html_source, '<!--') !== false) {
             $html_source = preg_replace('#<!--[\s\S]*?-->#is', '', $html_source);
@@ -472,6 +480,12 @@ class template {
             }
             //short tag
             $compress_html_source .= trim($c);
+        }
+        // replace special tags
+        if ($special_tags) {
+            foreach ($special_tags as $k => $v) {
+                $compress_html_source = str_replace('[[special-tag' . $k . ']]', $v[0], $compress_html_source);
+            }
         }
         $html_source = $compress_html_source;
     }

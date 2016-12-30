@@ -3,7 +3,8 @@
 /**
  * Class core
  */
-class core {
+class core
+{
     /**
      * config for core
      *
@@ -23,6 +24,7 @@ class core {
      *
      * @param        $key
      * @param string $default
+     *
      * @return null|string
      */
     public static function P($key, $default = '') {
@@ -35,6 +37,7 @@ class core {
      *
      * @param        $k
      * @param string $var
+     *
      * @return null|string
      */
     public static function gpc($k, $var = 'G') {
@@ -47,21 +50,21 @@ class core {
         switch ($var) {
             case 'G':
                 $var = &$_GET;
-            break;
+                break;
             case 'P':
                 $var = &$_POST;
-            break;
+                break;
             case 'C':
                 //处理COOKIE
                 $k   = $_SERVER['cookie_pre'] . $k;
                 $var = &$_COOKIE;
-            break;
+                break;
             case 'R':
                 $var = isset($_GET[$k]) ? $_GET : (isset($_POST[$k]) ? $_POST : array());
-            break;
+                break;
             case 'S':
                 $var = &$_SERVER;
-            break;
+                break;
         }
         if (isset($var[$k])) {
             return $type == 'str' ? $var[$k] : self::get_gpc_value(strtolower($type), $var[$k]);
@@ -75,6 +78,7 @@ class core {
      *
      * @param $type
      * @param $value
+     *
      * @return float|int|string
      */
     public static function get_gpc_value($type, $value) {
@@ -113,6 +117,7 @@ class core {
      * @param string     $path
      * @param string     $domain
      * @param bool|FALSE $httponly
+     *
      * @return null|string
      */
     public static function C($key, $value = '__GET__', $time = -1, $path = '/', $domain = '', $httponly = FALSE) {
@@ -145,6 +150,7 @@ class core {
      *
      * @param        $key
      * @param string $default
+     *
      * @return null|string
      */
     public static function S($key, $default = '') {
@@ -156,6 +162,7 @@ class core {
      * addslashes for object
      *
      * @param $var
+     *
      * @return string
      */
     public static function addslashes(&$var) {
@@ -173,6 +180,7 @@ class core {
      * htmlspecialchas for object
      *
      * @param $var
+     *
      * @return mixed
      */
     public static function htmlspecialchars(&$var) {
@@ -190,6 +198,7 @@ class core {
      * fix urlencode
      *
      * @param $s
+     *
      * @return mixed
      */
     public static function urlencode($s) {
@@ -201,6 +210,7 @@ class core {
      * fix urldecode
      *
      * @param $s
+     *
      * @return string
      */
     public static function urldecode($s) {
@@ -211,6 +221,7 @@ class core {
      * json_decode
      *
      * @param $s
+     *
      * @return bool|mixed
      */
     public static function json_decode($s) {
@@ -221,6 +232,7 @@ class core {
      * fix json_encode without unicode encoding
      *
      * @param $data
+     *
      * @return string
      */
     public static function json_encode($data) {
@@ -258,7 +270,8 @@ class core {
      * @return string
      */
     public static function usedtime() {
-        return number_format(microtime(1) - $_SERVER['starttime'], 6) * 1000;
+        $usetime = microtime(1) - $_SERVER['starttime'];
+        return round($usetime, 6) * 1000;
     }
 
     /**
@@ -274,6 +287,7 @@ class core {
      * ob start callback
      *
      * @param $s
+     *
      * @return mixed|string
      */
     public static function ob_handle($s) {
@@ -333,6 +347,7 @@ class core {
      * @param        $para
      * @param string $ds
      * @param string $ext
+     *
      * @return string
      */
     public static function rewrite_url($pre, $para, $ds = '_', $ext = '.htm') {
@@ -362,6 +377,7 @@ class core {
      * init auto load handler
      *
      * @param $classname
+     *
      * @return bool
      * @throws Exception
      */
@@ -384,6 +400,7 @@ class core {
      *
      * @param $conf
      * @param $model
+     *
      * @return string
      */
     public static function model_file($conf, $model) {
@@ -403,6 +420,7 @@ class core {
      *
      * @param        $conf
      * @param        $model
+     *
      * @return base_model
      * @throws Exception
      * example :
@@ -423,7 +441,6 @@ class core {
             return DB::T($model, $model_data);
         }
         throw new Exception('Not found model: ' . $model);
-
     }
 
     /**
@@ -491,6 +508,7 @@ class core {
      * @param string $ds
      * @param string $ext
      * @param string $tag
+     *
      * @return string
      */
     public static function rewrite($path, $pre, $para, $ds = '_', $ext = '.htm', $tag = 1) {
@@ -526,6 +544,7 @@ class core {
      *
      * @param            $path
      * @param bool|FALSE $fullpath
+     *
      * @return array
      */
     public static function get_paths($path, $fullpath = FALSE) {
@@ -543,6 +562,7 @@ class core {
      * core run
      *
      * @param $conf
+     *
      * @throws Exception
      */
     public static function run(&$conf) {
@@ -582,6 +602,8 @@ class core {
             self::$control->$onaction();
             //call_user_func(array($newcontrol, $onaction));
             self::debug();
+        } else if (method_exists(self::$control, 'on_404')) {
+            self::$control->on_404($onaction . ' method not exists.');
         } else {
             throw new Exception("Invaild URL : $onaction method not exists.");
         }
@@ -630,6 +652,7 @@ class core {
      * load conf by per domain
      *
      * @param $conf
+     *
      * @return string
      */
     public static function init_conf_by_domain(&$conf) {
@@ -650,6 +673,16 @@ class core {
             } else {
                 $domain_conf[$host] = array();
             }
+        }
+        // set default get
+        if (isset($domain_conf[$host]['get'])) {
+            $_GET     = array_merge($_GET, $domain_conf[$host]['get']);
+            $_REQUEST = array_merge($_REQUEST, $domain_conf[$host]['get']);
+        }
+        // set default post
+        if (isset($domain_conf[$host]['post'])) {
+            $_POST    = array_merge($_POST, $domain_conf[$host]['post']);
+            $_REQUEST = array_merge($_REQUEST, $domain_conf[$host]['post']);
         }
         $conf = array_merge($origin_conf, $domain_conf[$host]);
     }
@@ -861,12 +894,15 @@ class core {
 
         $get['c'] = $tmpval && preg_match("/^\w+$/", $tmpval) ? $tmpval : 'index';
         $get['a'] = $tmpact && preg_match("/^\w+$/", $tmpact) ? $tmpact : 'index';
+        // merge REQUEST
+        $_REQUEST = array_merge($get, $_REQUEST);
     }
 
     /**
      * get ip by format
      *
      * @param int $format
+     *
      * @return null|string
      */
     public static function ip($format = 0) {
@@ -902,7 +938,7 @@ class core {
     public static function init_set() {
         //----------------------------------> 全局设置:
         // 错误报告
-        if (DEBUG) {
+        if (DEBUG && !core::is_cmd()) {
             debug::init();
         } else {
             error_reporting(E_ALL & ~E_STRICT & ~E_NOTICE & ~E_WARNING & ~E_DEPRECATED);
@@ -938,6 +974,7 @@ class core {
      * stripslashes for object
      *
      * @param $var
+     *
      * @return string
      */
     public static function stripslashes(&$var) {
@@ -969,6 +1006,7 @@ class core {
      *
      * @param        $key
      * @param string $default
+     *
      * @return null|string
      */
     public static function R($key, $default = '') {
@@ -981,6 +1019,7 @@ class core {
      *
      * @param        $key
      * @param string $default
+     *
      * @return null|string
      */
     public static function G($key, $default = '') {
@@ -1025,7 +1064,8 @@ class core {
     }
 }
 
-class C extends core {
+class C extends core
+{
 }
 
 if (!function_exists('class_alias')) {

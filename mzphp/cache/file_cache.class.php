@@ -3,7 +3,8 @@
 /**
  * Class file_cache
  */
-class file_cache {
+class file_cache
+{
 
     /**
      * $conf[filename] = 'pre_';

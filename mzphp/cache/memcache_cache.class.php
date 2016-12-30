@@ -1,6 +1,7 @@
 <?php
 
-class memcache_cache {
+class memcache_cache
+{
 
     /**
      * multi get support
@@ -27,14 +28,15 @@ class memcache_cache {
 
     /**
      * @param $conf
+     *
      * @throws Exception
      */
     function __construct(&$conf) {
         $this->support_getmulti = false;
         if (extension_loaded('Memcached')) {
-            $this->link = new Memcached;
+            $this->link             = new Memcached;
             $this->support_getmulti = true;
-            $this->memcached = 1;
+            $this->memcached        = 1;
         } elseif (extension_loaded('Memcache')) {
             $this->link = new Memcache;
         } else {
@@ -63,6 +65,7 @@ class memcache_cache {
 
     /**
      * @param $host
+     *
      * @return array
      */
     private function get_host_by_str($host) {
@@ -82,6 +85,7 @@ class memcache_cache {
 
     /**
      * @param $key
+     *
      * @return array|string
      */
     public function get($key) {
@@ -97,7 +101,7 @@ class memcache_cache {
                 return $arrlist;
             } else {
                 foreach ($key as $k) {
-                    $arr = $this->link->get($k);
+                    $arr      = $this->link->get($k);
                     $data[$k] = $arr;
                 }
                 return $data;
@@ -112,6 +116,7 @@ class memcache_cache {
      * @param     $key
      * @param     $value
      * @param int $life
+     *
      * @return bool
      */
     public function set($key, $value, $life = 0) {
@@ -125,6 +130,7 @@ class memcache_cache {
     /**
      * @param $key
      * @param $value
+     *
      * @return bool|int
      */
     public function update($key, $value) {
@@ -138,6 +144,7 @@ class memcache_cache {
 
     /**
      * @param $key
+     *
      * @return bool
      */
     public function delete($key) {
@@ -146,6 +153,7 @@ class memcache_cache {
 
     /**
      * @param string $pre
+     *
      * @return bool
      */
     public function truncate($pre = '') {

@@ -5,28 +5,29 @@
  *
  * @author Leaf Corcoran <leafot@gmail.com>
  */
-class scssc {
+class scssc
+{
     static public $VERSION = 'v0.0.12';
 
     static protected $operatorNames = array(
-        '+' => "add",
-        '-' => "sub",
-        '*' => "mul",
-        '/' => "div",
-        '%' => "mod",
+        '+'  => "add",
+        '-'  => "sub",
+        '*'  => "mul",
+        '/'  => "div",
+        '%'  => "mod",
 
         '==' => "eq",
         '!=' => "neq",
-        '<' => "lt",
-        '>' => "gt",
+        '<'  => "lt",
+        '>'  => "gt",
 
         '<=' => "lte",
         '>=' => "gte",
     );
 
     static protected $namespaces = array(
-        "special" => "%",
-        "mixin" => "@",
+        "special"  => "%",
+        "mixin"    => "@",
         "function" => "^",
     );
 
@@ -41,9 +42,9 @@ class scssc {
         )
     );
 
-    static public $true = array("keyword", "true");
+    static public $true  = array("keyword", "true");
     static public $false = array("keyword", "false");
-    static public $null = array("null");
+    static public $null  = array("null");
 
     static public $defaultValue = array("keyword", "");
     static public $selfSelector = array("self");
@@ -51,7 +52,7 @@ class scssc {
     protected $importPaths = array("");
     protected $importCache = array();
 
-    protected $userFunctions = array();
+    protected $userFunctions  = array();
     protected $registeredVars = array();
 
     protected $numberPrecision = 5;
@@ -93,13 +94,13 @@ class scssc {
      * @return string
      */
     public function compile($code, $name = null) {
-        $this->indentLevel = -1;
+        $this->indentLevel  = -1;
         $this->commentsSeen = array();
-        $this->extends = array();
-        $this->extendsMap = array();
-        $this->parsedFiles = array();
-        $this->env = null;
-        $this->scope = null;
+        $this->extends      = array();
+        $this->extendsMap   = array();
+        $this->parsedFiles  = array();
+        $this->env          = null;
+        $this->scope        = null;
 
         $locale = setlocale(LC_NUMERIC, 0);
         setlocale(LC_NUMERIC, "C");
@@ -137,7 +138,7 @@ class scssc {
             return;
         }
 
-        $i = count($this->extends);
+        $i               = count($this->extends);
         $this->extends[] = array($target, $origin);
 
         foreach ($target as $part) {
@@ -150,13 +151,13 @@ class scssc {
     }
 
     protected function makeOutputBlock($type, $selectors = null) {
-        $out = new stdClass;
-        $out->type = $type;
-        $out->lines = array();
-        $out->children = array();
-        $out->parent = $this->scope;
+        $out            = new stdClass;
+        $out->type      = $type;
+        $out->lines     = array();
+        $out->children  = array();
+        $out->parent    = $this->scope;
         $out->selectors = $selectors;
-        $out->depth = $this->env->depth;
+        $out->depth     = $this->env->depth;
 
         return $out;
     }
@@ -175,7 +176,7 @@ class scssc {
         }
 
         $outOrigin = array();
-        $found = false;
+        $found     = false;
 
         foreach ($counts as $idx => $count) {
             list($target, $origin) = $this->extends[$idx];
@@ -234,7 +235,7 @@ class scssc {
 
             if ($this->matchExtendsSingle($part, $origin)) {
                 $before = array_slice($selector, 0, $i);
-                $after = array_slice($selector, $i + 1);
+                $after  = array_slice($selector, $i + 1);
 
                 foreach ($origin as $new) {
                     $k = 0;
@@ -287,7 +288,7 @@ class scssc {
                 }
             }
 
-            $block->selectors = array();
+            $block->selectors    = array();
             $placeholderSelector = false;
             foreach ($selectors as $selector) {
                 if ($this->hasSelectorPlaceholder($selector)) {
@@ -338,9 +339,9 @@ class scssc {
             }
 
             if ($needsWrap) {
-                $wrapped = (object)array(
+                $wrapped         = (object)array(
                     "selectors" => array(),
-                    "children" => $media->children
+                    "children"  => $media->children
                 );
                 $media->children = array(array("block", $wrapped));
             }
@@ -368,7 +369,7 @@ class scssc {
     protected function compileNestedBlock($block, $selectors) {
         $this->pushEnv($block);
 
-        $this->scope = $this->makeOutputBlock($block->type, $selectors);
+        $this->scope                     = $this->makeOutputBlock($block->type, $selectors);
         $this->scope->parent->children[] = $this->scope;
         $this->compileChildren($block->children, $this->scope);
 
@@ -400,7 +401,7 @@ class scssc {
         $env->selectors =
             array_map(array($this, "evalSelector"), $block->selectors);
 
-        $out = $this->makeOutputBlock(null, $this->multiplySelectors($env));
+        $out                     = $this->makeOutputBlock(null, $this->multiplySelectors($env));
         $this->scope->children[] = $out;
         $this->compileChildren($block->children, $out);
 
@@ -499,10 +500,10 @@ class scssc {
     }
 
     protected function compileMediaQuery($queryList) {
-        $out = "@media";
+        $out   = "@media";
         $first = true;
         foreach ($queryList as $query) {
-            $type = null;
+            $type  = null;
             $parts = array();
             foreach ($query as $q) {
                 switch ($q[0]) {
@@ -614,7 +615,7 @@ class scssc {
 
     // return a value to halt execution
     protected function compileChild($child, $out) {
-        $this->sourcePos = isset($child[-1]) ? $child[-1] : -1;
+        $this->sourcePos    = isset($child[-1]) ? $child[-1] : -1;
         $this->sourceParser = isset($child[-2]) ? $child[-2] : $this->parser;
 
         switch ($child[0]) {
@@ -650,7 +651,7 @@ class scssc {
 
                     if ($isDefault) {
                         $existingValue = $this->get($name[1], true);
-                        $shouldSet = $existingValue === true || $existingValue == self::$null;
+                        $shouldSet     = $existingValue === true || $existingValue == self::$null;
                     }
 
                     if (!$isDefault || $shouldSet) {
@@ -669,7 +670,7 @@ class scssc {
                 }
 
                 $compiledValue = $this->compileValue($value);
-                $out->lines[] = $this->formatter->property(
+                $out->lines[]  = $this->formatter->property(
                     $this->compileValue($name),
                     $compiledValue);
                 break;
@@ -727,9 +728,9 @@ class scssc {
                 list(, $for) = $child;
                 $start = $this->reduce($for->start, true);
                 $start = $start[1];
-                $end = $this->reduce($for->end, true);
-                $end = $end[1];
-                $d = $start < $end ? 1 : -1;
+                $end   = $this->reduce($for->end, true);
+                $end   = $end[1];
+                $d     = $start < $end ? 1 : -1;
 
                 while (true) {
                     if ((!$for->until && $start - $d == $end) ||
@@ -749,7 +750,7 @@ class scssc {
             case "nestedprop":
                 list(, $prop) = $child;
                 $prefixed = array();
-                $prefix = $this->compileValue($prop->prefix) . "-";
+                $prefix   = $this->compileValue($prop->prefix) . "-";
                 foreach ($prop->children as $child) {
                     if ($child[0] == "assign") {
                         array_unshift($child[1][2], $prefix);
@@ -820,7 +821,7 @@ class scssc {
                 break;
             case "debug":
                 list(, $value, $pos) = $child;
-                $line = $this->parser->getLineNo($pos);
+                $line  = $this->parser->getLineNo($pos);
                 $value = $this->compileValue($this->reduce($value, true));
                 fwrite(STDERR, "Line $line DEBUG: $value\n");
                 break;
@@ -866,7 +867,7 @@ class scssc {
 
                 $inExp = $inExp || $this->shouldEval($left) || $this->shouldEval($right);
 
-                $left = $this->reduce($left, true);
+                $left  = $this->reduce($left, true);
                 $right = $this->reduce($right, true);
 
                 // only do division in special cases
@@ -876,7 +877,7 @@ class scssc {
                     }
                 }
 
-                $left = $this->coerceForExpression($left);
+                $left  = $this->coerceForExpression($left);
                 $right = $this->coerceForExpression($right);
 
                 $ltype = $left[0];
@@ -904,16 +905,16 @@ class scssc {
                         }
 
                         $unitChange = true;
-                        $emptyUnit = $left[2] == "" || $right[2] == "";
+                        $emptyUnit  = $left[2] == "" || $right[2] == "";
                         $targetUnit = "" != $left[2] ? $left[2] : $right[2];
 
                         if ($opName != "mul") {
-                            $left[2] = "" != $left[2] ? $left[2] : $targetUnit;
+                            $left[2]  = "" != $left[2] ? $left[2] : $targetUnit;
                             $right[2] = "" != $right[2] ? $right[2] : $targetUnit;
                         }
 
                         if ($opName != "mod") {
-                            $left = $this->normalizeNumber($left);
+                            $left  = $this->normalizeNumber($left);
                             $right = $this->normalizeNumber($right);
                         }
 
@@ -922,10 +923,10 @@ class scssc {
                         }
 
                         if ($opName == "mul") {
-                            $left[2] = "" != $left[2] ? $left[2] : $right[2];
+                            $left[2]  = "" != $left[2] ? $left[2] : $right[2];
                             $right[2] = "" != $right[2] ? $right[2] : $left[2];
                         } elseif ($opName == "div" && $left[2] == $right[2]) {
-                            $left[2] = "";
+                            $left[2]  = "";
                             $right[2] = "";
                         }
                     }
@@ -1007,7 +1008,7 @@ class scssc {
 
                     // throw away lines and children
                     $tmp = (object)array(
-                        "lines" => array(),
+                        "lines"    => array(),
                         "children" => array()
                     );
                     $ret = $this->compileChildren($func->children, $tmp);
@@ -1294,7 +1295,7 @@ class scssc {
                 switch ($reduced[0]) {
                     case "string":
                         $reduced = array("keyword",
-                            $this->compileStringContent($reduced));
+                                         $this->compileStringContent($reduced));
                         break;
                     case "null":
                         $reduced = array("keyword", "");
@@ -1327,7 +1328,7 @@ class scssc {
         foreach ($items as $i => $item) {
             if ($item[0] == "interpolate") {
                 $before = array("list", $list[1], array_slice($items, 0, $i));
-                $after = array("list", $list[1], array_slice($items, $i + 1));
+                $after  = array("list", $list[1], array_slice($items, $i + 1));
                 return array("interpolated", $item, $before, $after);
             }
         }
@@ -1344,7 +1345,7 @@ class scssc {
             $env = $env->parent;
         };
 
-        $selectors = array();
+        $selectors       = array();
         $parentSelectors = array(array());
         while ($env = array_pop($envs)) {
             $selectors = array();
@@ -1362,7 +1363,7 @@ class scssc {
     // looks for & to replace, or append parent before child
     protected function joinSelectors($parent, $child) {
         $setSelf = false;
-        $out = array();
+        $out     = array();
         foreach ($child as $part) {
             $newPart = array();
             foreach ($part as $p) {
@@ -1370,7 +1371,7 @@ class scssc {
                     $setSelf = true;
                     foreach ($parent as $i => $parentPart) {
                         if ($i > 0) {
-                            $out[] = $newPart;
+                            $out[]   = $newPart;
                             $newPart = array();
                         }
 
@@ -1406,7 +1407,7 @@ class scssc {
             $childQueries = $parentQueries;
         } else {
             $originalQueries = $childQueries;
-            $childQueries = array();
+            $childQueries    = array();
 
             foreach ($parentQueries as $parentQuery) {
                 foreach ($originalQueries as $childQuery) {
@@ -1429,16 +1430,16 @@ class scssc {
 
     protected function applyArguments($argDef, $argValues) {
         $hasVariable = false;
-        $args = array();
+        $args        = array();
         foreach ($argDef as $i => $arg) {
             list($name, $default, $isVariable) = $argDef[$i];
             $args[$name] = array($i, $name, $default, $isVariable);
             $hasVariable |= $isVariable;
         }
 
-        $keywordArgs = array();
+        $keywordArgs         = array();
         $deferredKeywordArgs = array();
-        $remaining = array();
+        $remaining           = array();
         // assign the keyword args
         foreach ((array)$argValues as $arg) {
             if (!empty($arg[0])) {
@@ -1498,11 +1499,11 @@ class scssc {
     }
 
     protected function pushEnv($block = null) {
-        $env = new stdClass;
+        $env         = new stdClass;
         $env->parent = $this->env;
-        $env->store = array();
-        $env->block = $block;
-        $env->depth = isset($this->env->depth) ? $this->env->depth + 1 : 0;
+        $env->store  = array();
+        $env->block  = $block;
+        $env->depth  = isset($this->env->depth) ? $this->env->depth + 1 : 0;
 
         $this->env = $env;
         return $env;
@@ -1537,7 +1538,7 @@ class scssc {
     }
 
     protected function setRaw($name, $value) {
-        $env = $this->getStoreEnv();
+        $env               = $this->getStoreEnv();
         $env->store[$name] = $value;
     }
 
@@ -1568,12 +1569,12 @@ class scssc {
                 $name = substr($name, 1);
             }
 
-            $parser->env = null;
-            $parser->count = 0;
-            $parser->buffer = (string)$strValue;
-            $parser->inParens = false;
+            $parser->env             = null;
+            $parser->count           = 0;
+            $parser->buffer          = (string)$strValue;
+            $parser->inParens        = false;
             $parser->eatWhiteDefault = true;
-            $parser->insertComments = true;
+            $parser->insertComments  = true;
 
             if (!$parser->valueList($value)) {
                 throw new Exception("failed to parse passed in variable $name: $strValue");
@@ -1602,7 +1603,7 @@ class scssc {
     }
 
     protected function popEnv() {
-        $env = $this->env;
+        $env       = $this->env;
         $this->env = $this->env->parent;
         return $env;
     }
@@ -1641,9 +1642,9 @@ class scssc {
         if (isset($this->importCache[$realPath])) {
             $tree = $this->importCache[$realPath];
         } else {
-            $code = file_get_contents($path);
-            $parser = new scss_parser($path, false);
-            $tree = $parser->parse($code);
+            $code                = file_get_contents($path);
+            $parser              = new scss_parser($path, false);
+            $tree                = $parser->parse($code);
             $this->parsedFiles[] = $path;
 
             $this->importCache[$realPath] = $tree;
@@ -1697,12 +1698,12 @@ class scssc {
 
     protected function callBuiltin($name, $args, &$returnValue) {
         // try a lib function
-        $name = $this->normalizeName($name);
+        $name    = $this->normalizeName($name);
         $libName = "lib_" . $name;
-        $f = array($this, $libName);
+        $f       = array($this, $libName);
         if (is_callable($f)) {
             $prototype = isset(self::$$libName) ? self::$$libName : null;
-            $sorted = $this->sortArgs($prototype, $args);
+            $sorted    = $this->sortArgs($prototype, $args);
             foreach ($sorted as &$val) {
                 $val = $this->reduce($val, true);
             }
@@ -1763,7 +1764,7 @@ class scssc {
             foreach ((array)$names as $name) {
                 if (isset($keyArgs[$name])) {
                     $finalArgs[] = $keyArgs[$name];
-                    $set = true;
+                    $set         = true;
                     break;
                 }
             }
@@ -1953,8 +1954,8 @@ class scssc {
 
     protected function lib_rgba($args) {
         if ($color = $this->coerceColor($args[0])) {
-            $num = !isset($args[1]) ? $args[3] : $args[1];
-            $alpha = $this->assertNumber($num);
+            $num      = !isset($args[1]) ? $args[3] : $args[1];
+            $alpha    = $this->assertNumber($num);
             $color[4] = $alpha;
             return $color;
         }
@@ -1969,8 +1970,8 @@ class scssc {
 
         foreach (array(1, 2, 3, 7) as $i) {
             if (isset($args[$i])) {
-                $val = $this->assertNumber($args[$i]);
-                $ii = $i == 7 ? 4 : $i; // alpha
+                $val        = $this->assertNumber($args[$i]);
+                $ii         = $i == 7 ? 4 : $i; // alpha
                 $color[$ii] =
                     $this->$fn(isset($color[$ii]) ? $color[$ii] : 0, $val, $i);
             }
@@ -1980,7 +1981,7 @@ class scssc {
             $hsl = $this->toHSL($color[1], $color[2], $color[3]);
             foreach (array(4, 5, 6) as $i) {
                 if (isset($args[$i])) {
-                    $val = $this->assertNumber($args[$i]);
+                    $val         = $this->assertNumber($args[$i]);
                     $hsl[$i - 3] = $this->$fn($hsl[$i - 3], $val, $i);
                 }
             }
@@ -2059,7 +2060,7 @@ class scssc {
     protected static $lib_ie_hex_str = array("color");
 
     protected function lib_ie_hex_str($args) {
-        $color = $this->coerceColor($args[0]);
+        $color    = $this->coerceColor($args[0]);
         $color[4] = isset($color[4]) ? round(255 * $color[4]) : 255;
 
         return sprintf('#%02X%02X%02X%02X', $color[4], $color[1], $color[2], $color[3]);
@@ -2110,7 +2111,7 @@ class scssc {
 
     protected function lib_mix($args) {
         list($first, $second, $weight) = $args;
-        $first = $this->assertColor($first);
+        $first  = $this->assertColor($first);
         $second = $this->assertColor($second);
 
         if (!isset($weight)) {
@@ -2119,7 +2120,7 @@ class scssc {
             $weight = $this->coercePercent($weight);
         }
 
-        $firstAlpha = isset($first[4]) ? $first[4] : 1;
+        $firstAlpha  = isset($first[4]) ? $first[4] : 1;
         $secondAlpha = isset($second[4]) ? $second[4] : 1;
 
         $w = $weight * 2 - 1;
@@ -2129,9 +2130,9 @@ class scssc {
         $w2 = 1.0 - $w1;
 
         $new = array('color',
-            $w1 * $first[1] + $w2 * $second[1],
-            $w1 * $first[2] + $w2 * $second[2],
-            $w1 * $first[3] + $w2 * $second[3],
+                     $w1 * $first[1] + $w2 * $second[1],
+                     $w1 * $first[2] + $w2 * $second[2],
+                     $w1 * $first[3] + $w2 * $second[3],
         );
 
         if ($firstAlpha != 1.0 || $secondAlpha != 1.0) {
@@ -2149,11 +2150,11 @@ class scssc {
     }
 
     protected static $lib_hsla = array("hue", "saturation",
-        "lightness", "alpha");
+                                       "lightness", "alpha");
 
     protected function lib_hsla($args) {
         list($h, $s, $l, $a) = $args;
-        $color = $this->toRGB($h[1], $s[1], $l[1]);
+        $color    = $this->toRGB($h[1], $s[1], $l[1]);
         $color[4] = $a[1];
         return $color;
     }
@@ -2162,7 +2163,7 @@ class scssc {
 
     protected function lib_hue($args) {
         $color = $this->assertColor($args[0]);
-        $hsl = $this->toHSL($color[1], $color[2], $color[3]);
+        $hsl   = $this->toHSL($color[1], $color[2], $color[3]);
         return array("number", $hsl[1], "deg");
     }
 
@@ -2170,7 +2171,7 @@ class scssc {
 
     protected function lib_saturation($args) {
         $color = $this->assertColor($args[0]);
-        $hsl = $this->toHSL($color[1], $color[2], $color[3]);
+        $hsl   = $this->toHSL($color[1], $color[2], $color[3]);
         return array("number", $hsl[2], "%");
     }
 
@@ -2178,7 +2179,7 @@ class scssc {
 
     protected function lib_lightness($args) {
         $color = $this->assertColor($args[0]);
-        $hsl = $this->toHSL($color[1], $color[2], $color[3]);
+        $hsl   = $this->toHSL($color[1], $color[2], $color[3]);
         return array("number", $hsl[3], "%");
     }
 
@@ -2193,7 +2194,7 @@ class scssc {
     protected static $lib_adjust_hue = array("color", "degrees");
 
     protected function lib_adjust_hue($args) {
-        $color = $this->assertColor($args[0]);
+        $color   = $this->assertColor($args[0]);
         $degrees = $this->assertNumber($args[1]);
         return $this->adjustHsl($color, 1, $degrees);
     }
@@ -2201,7 +2202,7 @@ class scssc {
     protected static $lib_lighten = array("color", "amount");
 
     protected function lib_lighten($args) {
-        $color = $this->assertColor($args[0]);
+        $color  = $this->assertColor($args[0]);
         $amount = 100 * $this->coercePercent($args[1]);
         return $this->adjustHsl($color, 3, $amount);
     }
@@ -2209,7 +2210,7 @@ class scssc {
     protected static $lib_darken = array("color", "amount");
 
     protected function lib_darken($args) {
-        $color = $this->assertColor($args[0]);
+        $color  = $this->assertColor($args[0]);
         $amount = 100 * $this->coercePercent($args[1]);
         return $this->adjustHsl($color, 3, -$amount);
     }
@@ -2219,7 +2220,7 @@ class scssc {
     protected function lib_saturate($args) {
         $value = $args[0];
         if ($value[0] === 'number') return null;
-        $color = $this->assertColor($value);
+        $color  = $this->assertColor($value);
         $amount = 100 * $this->coercePercent($args[1]);
         return $this->adjustHsl($color, 2, $amount);
     }
@@ -2227,7 +2228,7 @@ class scssc {
     protected static $lib_desaturate = array("color", "amount");
 
     protected function lib_desaturate($args) {
-        $color = $this->assertColor($args[0]);
+        $color  = $this->assertColor($args[0]);
         $amount = 100 * $this->coercePercent($args[1]);
         return $this->adjustHsl($color, 2, -$amount);
     }
@@ -2251,7 +2252,7 @@ class scssc {
     protected function lib_invert($args) {
         $value = $args[0];
         if ($value[0] === 'number') return null;
-        $color = $this->assertColor($value);
+        $color    = $this->assertColor($value);
         $color[1] = 255 - $color[1];
         $color[2] = 255 - $color[2];
         $color[3] = 255 - $color[3];
@@ -2262,7 +2263,7 @@ class scssc {
     protected static $lib_opacify = array("color", "amount");
 
     protected function lib_opacify($args) {
-        $color = $this->assertColor($args[0]);
+        $color  = $this->assertColor($args[0]);
         $amount = $this->coercePercent($args[1]);
 
         $color[4] = (isset($color[4]) ? $color[4] : 1) + $amount;
@@ -2280,7 +2281,7 @@ class scssc {
     protected static $lib_transparentize = array("color", "amount");
 
     protected function lib_transparentize($args) {
-        $color = $this->assertColor($args[0]);
+        $color  = $this->assertColor($args[0]);
         $amount = $this->coercePercent($args[1]);
 
         $color[4] = (isset($color[4]) ? $color[4] : 1) - $amount;
@@ -2315,14 +2316,14 @@ class scssc {
 
     protected function lib_percentage($args) {
         return array("number",
-            $this->coercePercent($args[0]) * 100,
-            "%");
+                     $this->coercePercent($args[0]) * 100,
+                     "%");
     }
 
     protected static $lib_round = array("value");
 
     protected function lib_round($args) {
-        $num = $args[0];
+        $num    = $args[0];
         $num[1] = round($num[1]);
         return $num;
     }
@@ -2330,7 +2331,7 @@ class scssc {
     protected static $lib_floor = array("value");
 
     protected function lib_floor($args) {
-        $num = $args[0];
+        $num    = $args[0];
         $num[1] = floor($num[1]);
         return $num;
     }
@@ -2338,7 +2339,7 @@ class scssc {
     protected static $lib_ceil = array("value");
 
     protected function lib_ceil($args) {
-        $num = $args[0];
+        $num    = $args[0];
         $num[1] = ceil($num[1]);
         return $num;
     }
@@ -2346,14 +2347,14 @@ class scssc {
     protected static $lib_abs = array("value");
 
     protected function lib_abs($args) {
-        $num = $args[0];
+        $num    = $args[0];
         $num[1] = abs($num[1]);
         return $num;
     }
 
     protected function lib_min($args) {
         $numbers = $this->getNormalizedNumbers($args);
-        $min = null;
+        $min     = null;
         foreach ($numbers as $key => $number) {
             if (null === $min || $number[1] <= $min[1]) {
                 $min = array($key, $number[1]);
@@ -2365,7 +2366,7 @@ class scssc {
 
     protected function lib_max($args) {
         $numbers = $this->getNormalizedNumbers($args);
-        $max = null;
+        $max     = null;
         foreach ($numbers as $key => $number) {
             if (null === $max || $number[1] >= $max[1]) {
                 $max = array($key, $number[1]);
@@ -2376,9 +2377,9 @@ class scssc {
     }
 
     protected function getNormalizedNumbers($args) {
-        $unit = null;
+        $unit         = null;
         $originalUnit = null;
-        $numbers = array();
+        $numbers      = array();
         foreach ($args as $key => $item) {
             if ('number' != $item[0]) {
                 $this->throwError("%s is not a number", $item[0]);
@@ -2386,7 +2387,7 @@ class scssc {
             $number = $this->normalizeNumber($item);
 
             if (null === $unit) {
-                $unit = $number[2];
+                $unit         = $number[2];
                 $originalUnit = $item[2];
             } elseif ($unit !== $number[2]) {
                 $this->throwError('Incompatible units: "%s" and "%s".', $originalUnit, $item[2]);
@@ -2409,7 +2410,7 @@ class scssc {
 
     protected function lib_nth($args) {
         $list = $this->coerceList($args[0]);
-        $n = $this->assertNumber($args[1]) - 1;
+        $n    = $this->assertNumber($args[1]) - 1;
         return isset($list[2][$n]) ? $list[2][$n] : self::$defaultValue;
     }
 
@@ -2431,7 +2432,7 @@ class scssc {
         list($list1, $list2, $sep) = $args;
         $list1 = $this->coerceList($list1, " ");
         $list2 = $this->coerceList($list2, " ");
-        $sep = $this->listSeparatorForJoin($list1, $sep);
+        $sep   = $this->listSeparatorForJoin($list1, $sep);
         return array("list", $sep, array_merge($list1[2], $list2[2]));
     }
 
@@ -2440,7 +2441,7 @@ class scssc {
     protected function lib_append($args) {
         list($list1, $value, $sep) = $args;
         $list1 = $this->coerceList($list1, " ");
-        $sep = $this->listSeparatorForJoin($list1, $sep);
+        $sep   = $this->listSeparatorForJoin($list1, $sep);
         return array("list", $sep, array_merge($list1[2], array($value)));
     }
 
@@ -2449,7 +2450,7 @@ class scssc {
             $this->assertList($arg);
         }
 
-        $lists = array();
+        $lists     = array();
         $firstList = array_shift($args);
         foreach ($firstList[2] as $key => $item) {
             $list = array("list", "", array($item));
@@ -2545,154 +2546,154 @@ class scssc {
      * @see http://www.w3.org/TR/css3-color
      */
     static protected $cssColors = array(
-        'aliceblue' => '240,248,255',
-        'antiquewhite' => '250,235,215',
-        'aqua' => '0,255,255',
-        'aquamarine' => '127,255,212',
-        'azure' => '240,255,255',
-        'beige' => '245,245,220',
-        'bisque' => '255,228,196',
-        'black' => '0,0,0',
-        'blanchedalmond' => '255,235,205',
-        'blue' => '0,0,255',
-        'blueviolet' => '138,43,226',
-        'brown' => '165,42,42',
-        'burlywood' => '222,184,135',
-        'cadetblue' => '95,158,160',
-        'chartreuse' => '127,255,0',
-        'chocolate' => '210,105,30',
-        'coral' => '255,127,80',
-        'cornflowerblue' => '100,149,237',
-        'cornsilk' => '255,248,220',
-        'crimson' => '220,20,60',
-        'cyan' => '0,255,255',
-        'darkblue' => '0,0,139',
-        'darkcyan' => '0,139,139',
-        'darkgoldenrod' => '184,134,11',
-        'darkgray' => '169,169,169',
-        'darkgreen' => '0,100,0',
-        'darkgrey' => '169,169,169',
-        'darkkhaki' => '189,183,107',
-        'darkmagenta' => '139,0,139',
-        'darkolivegreen' => '85,107,47',
-        'darkorange' => '255,140,0',
-        'darkorchid' => '153,50,204',
-        'darkred' => '139,0,0',
-        'darksalmon' => '233,150,122',
-        'darkseagreen' => '143,188,143',
-        'darkslateblue' => '72,61,139',
-        'darkslategray' => '47,79,79',
-        'darkslategrey' => '47,79,79',
-        'darkturquoise' => '0,206,209',
-        'darkviolet' => '148,0,211',
-        'deeppink' => '255,20,147',
-        'deepskyblue' => '0,191,255',
-        'dimgray' => '105,105,105',
-        'dimgrey' => '105,105,105',
-        'dodgerblue' => '30,144,255',
-        'firebrick' => '178,34,34',
-        'floralwhite' => '255,250,240',
-        'forestgreen' => '34,139,34',
-        'fuchsia' => '255,0,255',
-        'gainsboro' => '220,220,220',
-        'ghostwhite' => '248,248,255',
-        'gold' => '255,215,0',
-        'goldenrod' => '218,165,32',
-        'gray' => '128,128,128',
-        'green' => '0,128,0',
-        'greenyellow' => '173,255,47',
-        'grey' => '128,128,128',
-        'honeydew' => '240,255,240',
-        'hotpink' => '255,105,180',
-        'indianred' => '205,92,92',
-        'indigo' => '75,0,130',
-        'ivory' => '255,255,240',
-        'khaki' => '240,230,140',
-        'lavender' => '230,230,250',
-        'lavenderblush' => '255,240,245',
-        'lawngreen' => '124,252,0',
-        'lemonchiffon' => '255,250,205',
-        'lightblue' => '173,216,230',
-        'lightcoral' => '240,128,128',
-        'lightcyan' => '224,255,255',
+        'aliceblue'            => '240,248,255',
+        'antiquewhite'         => '250,235,215',
+        'aqua'                 => '0,255,255',
+        'aquamarine'           => '127,255,212',
+        'azure'                => '240,255,255',
+        'beige'                => '245,245,220',
+        'bisque'               => '255,228,196',
+        'black'                => '0,0,0',
+        'blanchedalmond'       => '255,235,205',
+        'blue'                 => '0,0,255',
+        'blueviolet'           => '138,43,226',
+        'brown'                => '165,42,42',
+        'burlywood'            => '222,184,135',
+        'cadetblue'            => '95,158,160',
+        'chartreuse'           => '127,255,0',
+        'chocolate'            => '210,105,30',
+        'coral'                => '255,127,80',
+        'cornflowerblue'       => '100,149,237',
+        'cornsilk'             => '255,248,220',
+        'crimson'              => '220,20,60',
+        'cyan'                 => '0,255,255',
+        'darkblue'             => '0,0,139',
+        'darkcyan'             => '0,139,139',
+        'darkgoldenrod'        => '184,134,11',
+        'darkgray'             => '169,169,169',
+        'darkgreen'            => '0,100,0',
+        'darkgrey'             => '169,169,169',
+        'darkkhaki'            => '189,183,107',
+        'darkmagenta'          => '139,0,139',
+        'darkolivegreen'       => '85,107,47',
+        'darkorange'           => '255,140,0',
+        'darkorchid'           => '153,50,204',
+        'darkred'              => '139,0,0',
+        'darksalmon'           => '233,150,122',
+        'darkseagreen'         => '143,188,143',
+        'darkslateblue'        => '72,61,139',
+        'darkslategray'        => '47,79,79',
+        'darkslategrey'        => '47,79,79',
+        'darkturquoise'        => '0,206,209',
+        'darkviolet'           => '148,0,211',
+        'deeppink'             => '255,20,147',
+        'deepskyblue'          => '0,191,255',
+        'dimgray'              => '105,105,105',
+        'dimgrey'              => '105,105,105',
+        'dodgerblue'           => '30,144,255',
+        'firebrick'            => '178,34,34',
+        'floralwhite'          => '255,250,240',
+        'forestgreen'          => '34,139,34',
+        'fuchsia'              => '255,0,255',
+        'gainsboro'            => '220,220,220',
+        'ghostwhite'           => '248,248,255',
+        'gold'                 => '255,215,0',
+        'goldenrod'            => '218,165,32',
+        'gray'                 => '128,128,128',
+        'green'                => '0,128,0',
+        'greenyellow'          => '173,255,47',
+        'grey'                 => '128,128,128',
+        'honeydew'             => '240,255,240',
+        'hotpink'              => '255,105,180',
+        'indianred'            => '205,92,92',
+        'indigo'               => '75,0,130',
+        'ivory'                => '255,255,240',
+        'khaki'                => '240,230,140',
+        'lavender'             => '230,230,250',
+        'lavenderblush'        => '255,240,245',
+        'lawngreen'            => '124,252,0',
+        'lemonchiffon'         => '255,250,205',
+        'lightblue'            => '173,216,230',
+        'lightcoral'           => '240,128,128',
+        'lightcyan'            => '224,255,255',
         'lightgoldenrodyellow' => '250,250,210',
-        'lightgray' => '211,211,211',
-        'lightgreen' => '144,238,144',
-        'lightgrey' => '211,211,211',
-        'lightpink' => '255,182,193',
-        'lightsalmon' => '255,160,122',
-        'lightseagreen' => '32,178,170',
-        'lightskyblue' => '135,206,250',
-        'lightslategray' => '119,136,153',
-        'lightslategrey' => '119,136,153',
-        'lightsteelblue' => '176,196,222',
-        'lightyellow' => '255,255,224',
-        'lime' => '0,255,0',
-        'limegreen' => '50,205,50',
-        'linen' => '250,240,230',
-        'magenta' => '255,0,255',
-        'maroon' => '128,0,0',
-        'mediumaquamarine' => '102,205,170',
-        'mediumblue' => '0,0,205',
-        'mediumorchid' => '186,85,211',
-        'mediumpurple' => '147,112,219',
-        'mediumseagreen' => '60,179,113',
-        'mediumslateblue' => '123,104,238',
-        'mediumspringgreen' => '0,250,154',
-        'mediumturquoise' => '72,209,204',
-        'mediumvioletred' => '199,21,133',
-        'midnightblue' => '25,25,112',
-        'mintcream' => '245,255,250',
-        'mistyrose' => '255,228,225',
-        'moccasin' => '255,228,181',
-        'navajowhite' => '255,222,173',
-        'navy' => '0,0,128',
-        'oldlace' => '253,245,230',
-        'olive' => '128,128,0',
-        'olivedrab' => '107,142,35',
-        'orange' => '255,165,0',
-        'orangered' => '255,69,0',
-        'orchid' => '218,112,214',
-        'palegoldenrod' => '238,232,170',
-        'palegreen' => '152,251,152',
-        'paleturquoise' => '175,238,238',
-        'palevioletred' => '219,112,147',
-        'papayawhip' => '255,239,213',
-        'peachpuff' => '255,218,185',
-        'peru' => '205,133,63',
-        'pink' => '255,192,203',
-        'plum' => '221,160,221',
-        'powderblue' => '176,224,230',
-        'purple' => '128,0,128',
-        'red' => '255,0,0',
-        'rosybrown' => '188,143,143',
-        'royalblue' => '65,105,225',
-        'saddlebrown' => '139,69,19',
-        'salmon' => '250,128,114',
-        'sandybrown' => '244,164,96',
-        'seagreen' => '46,139,87',
-        'seashell' => '255,245,238',
-        'sienna' => '160,82,45',
-        'silver' => '192,192,192',
-        'skyblue' => '135,206,235',
-        'slateblue' => '106,90,205',
-        'slategray' => '112,128,144',
-        'slategrey' => '112,128,144',
-        'snow' => '255,250,250',
-        'springgreen' => '0,255,127',
-        'steelblue' => '70,130,180',
-        'tan' => '210,180,140',
-        'teal' => '0,128,128',
-        'thistle' => '216,191,216',
-        'tomato' => '255,99,71',
-        'transparent' => '0,0,0,0',
-        'turquoise' => '64,224,208',
-        'violet' => '238,130,238',
-        'wheat' => '245,222,179',
-        'white' => '255,255,255',
-        'whitesmoke' => '245,245,245',
-        'yellow' => '255,255,0',
-        'yellowgreen' => '154,205,50'
+        'lightgray'            => '211,211,211',
+        'lightgreen'           => '144,238,144',
+        'lightgrey'            => '211,211,211',
+        'lightpink'            => '255,182,193',
+        'lightsalmon'          => '255,160,122',
+        'lightseagreen'        => '32,178,170',
+        'lightskyblue'         => '135,206,250',
+        'lightslategray'       => '119,136,153',
+        'lightslategrey'       => '119,136,153',
+        'lightsteelblue'       => '176,196,222',
+        'lightyellow'          => '255,255,224',
+        'lime'                 => '0,255,0',
+        'limegreen'            => '50,205,50',
+        'linen'                => '250,240,230',
+        'magenta'              => '255,0,255',
+        'maroon'               => '128,0,0',
+        'mediumaquamarine'     => '102,205,170',
+        'mediumblue'           => '0,0,205',
+        'mediumorchid'         => '186,85,211',
+        'mediumpurple'         => '147,112,219',
+        'mediumseagreen'       => '60,179,113',
+        'mediumslateblue'      => '123,104,238',
+        'mediumspringgreen'    => '0,250,154',
+        'mediumturquoise'      => '72,209,204',
+        'mediumvioletred'      => '199,21,133',
+        'midnightblue'         => '25,25,112',
+        'mintcream'            => '245,255,250',
+        'mistyrose'            => '255,228,225',
+        'moccasin'             => '255,228,181',
+        'navajowhite'          => '255,222,173',
+        'navy'                 => '0,0,128',
+        'oldlace'              => '253,245,230',
+        'olive'                => '128,128,0',
+        'olivedrab'            => '107,142,35',
+        'orange'               => '255,165,0',
+        'orangered'            => '255,69,0',
+        'orchid'               => '218,112,214',
+        'palegoldenrod'        => '238,232,170',
+        'palegreen'            => '152,251,152',
+        'paleturquoise'        => '175,238,238',
+        'palevioletred'        => '219,112,147',
+        'papayawhip'           => '255,239,213',
+        'peachpuff'            => '255,218,185',
+        'peru'                 => '205,133,63',
+        'pink'                 => '255,192,203',
+        'plum'                 => '221,160,221',
+        'powderblue'           => '176,224,230',
+        'purple'               => '128,0,128',
+        'red'                  => '255,0,0',
+        'rosybrown'            => '188,143,143',
+        'royalblue'            => '65,105,225',
+        'saddlebrown'          => '139,69,19',
+        'salmon'               => '250,128,114',
+        'sandybrown'           => '244,164,96',
+        'seagreen'             => '46,139,87',
+        'seashell'             => '255,245,238',
+        'sienna'               => '160,82,45',
+        'silver'               => '192,192,192',
+        'skyblue'              => '135,206,235',
+        'slateblue'            => '106,90,205',
+        'slategray'            => '112,128,144',
+        'slategrey'            => '112,128,144',
+        'snow'                 => '255,250,250',
+        'springgreen'          => '0,255,127',
+        'steelblue'            => '70,130,180',
+        'tan'                  => '210,180,140',
+        'teal'                 => '0,128,128',
+        'thistle'              => '216,191,216',
+        'tomato'               => '255,99,71',
+        'transparent'          => '0,0,0,0',
+        'turquoise'            => '64,224,208',
+        'violet'               => '238,130,238',
+        'wheat'                => '245,222,179',
+        'white'                => '255,255,255',
+        'whitesmoke'           => '245,245,245',
+        'yellow'               => '255,255,0',
+        'yellowgreen'          => '154,205,50'
     );
 }
 
@@ -2701,36 +2702,37 @@ class scssc {
  *
  * @author Leaf Corcoran <leafot@gmail.com>
  */
-class scss_parser {
+class scss_parser
+{
     static protected $precedence = array(
-        "or" => 0,
+        "or"  => 0,
         "and" => 1,
 
-        '==' => 2,
-        '!=' => 2,
-        '<=' => 2,
-        '>=' => 2,
-        '=' => 2,
-        '<' => 3,
-        '>' => 2,
+        '=='  => 2,
+        '!='  => 2,
+        '<='  => 2,
+        '>='  => 2,
+        '='   => 2,
+        '<'   => 3,
+        '>'   => 2,
 
-        '+' => 3,
-        '-' => 3,
+        '+'   => 3,
+        '-'   => 3,
 
-        '*' => 4,
-        '/' => 4,
-        '%' => 4,
+        '*'   => 4,
+        '/'   => 4,
+        '%'   => 4,
     );
 
     static protected $operators = array("+", "-", "*", "/", "%",
-        "==", "!=", "<=", ">=", "<", ">", "and", "or");
+                                        "==", "!=", "<=", ">=", "<", ">", "and", "or");
 
     static protected $operatorStr;
     static protected $whitePattern;
     static protected $commentMulti;
 
-    static protected $commentSingle = "//";
-    static protected $commentMultiLeft = "/*";
+    static protected $commentSingle     = "//";
+    static protected $commentMultiLeft  = "/*";
     static protected $commentMultiRight = "*/";
 
     /**
@@ -2746,9 +2748,9 @@ class scss_parser {
         if (empty(self::$operatorStr)) {
             self::$operatorStr = $this->makeOperatorStr(self::$operators);
 
-            $commentSingle = $this->preg_quote(self::$commentSingle);
-            $commentMultiLeft = $this->preg_quote(self::$commentMultiLeft);
-            $commentMultiRight = $this->preg_quote(self::$commentMultiRight);
+            $commentSingle      = $this->preg_quote(self::$commentSingle);
+            $commentMultiLeft   = $this->preg_quote(self::$commentMultiLeft);
+            $commentMultiRight  = $this->preg_quote(self::$commentMultiRight);
             self::$commentMulti = $commentMultiLeft . '.*?' . $commentMultiRight;
             self::$whitePattern = '/' . $commentSingle . '[^\n]*\s*|(' . self::$commentMulti . ')\s*|\s+/Ais';
         }
@@ -2767,12 +2769,12 @@ class scss_parser {
      * @return \StdClass
      */
     public function parse($buffer) {
-        $this->count = 0;
-        $this->env = null;
-        $this->inParens = false;
+        $this->count           = 0;
+        $this->env             = null;
+        $this->inParens        = false;
         $this->eatWhiteDefault = true;
-        $this->insertComments = true;
-        $this->buffer = $buffer;
+        $this->insertComments  = true;
+        $this->buffer          = $buffer;
 
         $this->pushBlock(null); // root block
         $this->whitespace();
@@ -2838,7 +2840,7 @@ class scss_parser {
         // the directives
         if (isset($this->buffer[$this->count]) && $this->buffer[$this->count] == "@") {
             if ($this->literal("@media") && $this->mediaQueryList($mediaQueryList) && $this->literal("{")) {
-                $media = $this->pushSpecialBlock("media");
+                $media            = $this->pushSpecialBlock("media");
                 $media->queryList = $mediaQueryList[2];
                 return true;
             } else {
@@ -2850,7 +2852,7 @@ class scss_parser {
                 ($this->argumentDef($args) || true) &&
                 $this->literal("{")
             ) {
-                $mixin = $this->pushSpecialBlock("mixin");
+                $mixin       = $this->pushSpecialBlock("mixin");
                 $mixin->name = $mixinName;
                 $mixin->args = $args;
                 return true;
@@ -2867,10 +2869,10 @@ class scss_parser {
                     $this->literal("{") && $hasBlock = true)
             ) {
                 $child = array("include",
-                    $mixinName, isset($argValues) ? $argValues : null, null);
+                               $mixinName, isset($argValues) ? $argValues : null, null);
 
                 if (!empty($hasBlock)) {
-                    $include = $this->pushSpecialBlock("include");
+                    $include        = $this->pushSpecialBlock("include");
                     $include->child = $child;
                 } else {
                     $this->append($child, $s);
@@ -2906,7 +2908,7 @@ class scss_parser {
                 $this->argumentDef($args) &&
                 $this->literal("{")
             ) {
-                $func = $this->pushSpecialBlock("function");
+                $func       = $this->pushSpecialBlock("function");
                 $func->name = $fnName;
                 $func->args = $args;
                 return true;
@@ -2927,8 +2929,8 @@ class scss_parser {
                 $this->valueList($list) &&
                 $this->literal("{")
             ) {
-                $each = $this->pushSpecialBlock("each");
-                $each->var = $varName[1];
+                $each       = $this->pushSpecialBlock("each");
+                $each->var  = $varName[1];
                 $each->list = $list;
                 return true;
             } else {
@@ -2939,7 +2941,7 @@ class scss_parser {
                 $this->expression($cond) &&
                 $this->literal("{")
             ) {
-                $while = $this->pushSpecialBlock("while");
+                $while       = $this->pushSpecialBlock("while");
                 $while->cond = $cond;
                 return true;
             } else {
@@ -2955,10 +2957,10 @@ class scss_parser {
                 $this->expression($end) &&
                 $this->literal("{")
             ) {
-                $for = $this->pushSpecialBlock("for");
-                $for->var = $varName[1];
+                $for        = $this->pushSpecialBlock("for");
+                $for->var   = $varName[1];
                 $for->start = $start;
-                $for->end = $end;
+                $for->end   = $end;
                 $for->until = isset($forUntil);
                 return true;
             } else {
@@ -2966,8 +2968,8 @@ class scss_parser {
             }
 
             if ($this->literal("@if") && $this->valueList($cond) && $this->literal("{")) {
-                $if = $this->pushSpecialBlock("if");
-                $if->cond = $cond;
+                $if        = $this->pushSpecialBlock("if");
+                $if->cond  = $cond;
                 $if->cases = array();
                 return true;
             } else {
@@ -2998,13 +3000,13 @@ class scss_parser {
                     if ($this->literal("{")) {
                         $else = $this->pushSpecialBlock("else");
                     } elseif ($this->literal("if") && $this->valueList($cond) && $this->literal("{")) {
-                        $else = $this->pushSpecialBlock("elseif");
+                        $else       = $this->pushSpecialBlock("elseif");
                         $else->cond = $cond;
                     }
 
                     if (isset($else)) {
                         $else->dontAppend = true;
-                        $if->cases[] = $else;
+                        $if->cases[]      = $else;
                         return true;
                     }
                 }
@@ -3026,7 +3028,7 @@ class scss_parser {
                 ($this->openString("{", $dirValue) || true) &&
                 $this->literal("{")
             ) {
-                $directive = $this->pushSpecialBlock("directive");
+                $directive       = $this->pushSpecialBlock("directive");
                 $directive->name = $dirName;
                 if (isset($dirValue)) $directive->value = $dirValue;
                 return true;
@@ -3069,7 +3071,7 @@ class scss_parser {
         }
 
         // opening css block
-        $oldComments = $this->insertComments;
+        $oldComments          = $this->insertComments;
         $this->insertComments = false;
         if ($this->selectors($selectors) && $this->literal("{")) {
             $this->pushBlock($selectors);
@@ -3089,9 +3091,9 @@ class scss_parser {
             }
 
             if ($this->literal("{")) {
-                $propBlock = $this->pushSpecialBlock("nestedprop");
+                $propBlock         = $this->pushSpecialBlock("nestedprop");
                 $propBlock->prefix = $name;
-                $foundSomething = true;
+                $foundSomething    = true;
             } elseif ($foundSomething) {
                 $foundSomething = $this->end();
             }
@@ -3167,18 +3169,18 @@ class scss_parser {
     // tree builders
 
     protected function pushBlock($selectors) {
-        $b = new stdClass;
+        $b         = new stdClass;
         $b->parent = $this->env; // not sure if we need this yet
 
         $b->selectors = $selectors;
-        $b->children = array();
+        $b->children  = array();
 
         $this->env = $b;
         return $b;
     }
 
     protected function pushSpecialBlock($type) {
-        $block = $this->pushBlock(null);
+        $block       = $this->pushBlock(null);
         $block->type = $type;
         return $block;
     }
@@ -3188,7 +3190,7 @@ class scss_parser {
             $this->throwParseError("unexpected }");
         }
 
-        $old = $this->env;
+        $old       = $this->env;
         $this->env = $this->env->parent;
         unset($old->parent);
         return $old;
@@ -3219,7 +3221,7 @@ class scss_parser {
         $s = $this->seek();
 
         $expressions = null;
-        $parts = array();
+        $parts       = array();
 
         if (($this->literal("only") && ($only = true) || $this->literal("not") && ($not = true) || true) && $this->mixedKeyword($mediaType)) {
             $prop = array("mediaType");
@@ -3233,7 +3235,7 @@ class scss_parser {
                     $media[2][] = array("keyword", $type);
                 }
             }
-            $prop[] = $media;
+            $prop[]  = $media;
             $parts[] = $prop;
         }
 
@@ -3247,7 +3249,7 @@ class scss_parser {
     }
 
     protected function mediaExpression(&$out) {
-        $s = $this->seek();
+        $s     = $this->seek();
         $value = null;
         if ($this->literal("(") &&
             $this->expression($feature) &&
@@ -3282,7 +3284,7 @@ class scss_parser {
 
         if ($this->genericList($value, "expression")) {
             $out = array($keyword, $value, false);
-            $s = $this->seek();
+            $s   = $this->seek();
             if ($this->literal("...")) {
                 $out[2] = true;
             } else {
@@ -3310,7 +3312,7 @@ class scss_parser {
     }
 
     protected function genericList(&$out, $parseItem, $delim = "", $flatten = true) {
-        $s = $this->seek();
+        $s     = $this->seek();
         $items = array();
         while ($this->$parseItem($value)) {
             $items[] = $value;
@@ -3360,7 +3362,7 @@ class scss_parser {
     protected function expHelper($lhs, $minP) {
         $opstr = self::$operatorStr;
 
-        $ss = $this->seek();
+        $ss          = $this->seek();
         $whiteBefore = isset($this->buffer[$this->count - 1]) &&
             ctype_space($this->buffer[$this->count - 1]);
         while ($this->match($opstr, $m) && self::$precedence[$m[1]] >= $minP) {
@@ -3381,8 +3383,8 @@ class scss_parser {
                 $rhs = $this->expHelper($rhs, self::$precedence[$next[1]]);
             }
 
-            $lhs = array("exp", $op, $lhs, $rhs, $this->inParens, $whiteBefore, $whiteAfter);
-            $ss = $this->seek();
+            $lhs         = array("exp", $op, $lhs, $rhs, $this->inParens, $whiteBefore, $whiteAfter);
+            $ss          = $this->seek();
             $whiteBefore = isset($this->buffer[$this->count - 1]) &&
                 ctype_space($this->buffer[$this->count - 1]);
         }
@@ -3450,7 +3452,7 @@ class scss_parser {
             ($this->inParens = true) && $this->expression($exp) &&
             $this->literal(")")
         ) {
-            $out = $exp;
+            $out            = $exp;
             $this->inParens = $inParens;
             return true;
         } else {
@@ -3527,7 +3529,7 @@ class scss_parser {
 
             if ($this->literal("=") && $this->expression($exp)) {
                 $args[] = array("string", "", array($var . "="));
-                $arg = $exp;
+                $arg    = $exp;
             } else {
                 break;
             }
@@ -3593,10 +3595,10 @@ class scss_parser {
 
         if ($this->match('(#([0-9a-f]{6})|#([0-9a-f]{3}))', $m)) {
             if (isset($m[3])) {
-                $num = $m[3];
+                $num   = $m[3];
                 $width = 16;
             } else {
-                $num = $m[2];
+                $num   = $m[2];
                 $width = 256;
             }
 
@@ -3633,8 +3635,8 @@ class scss_parser {
             return false;
         }
 
-        $content = array();
-        $oldWhite = $this->eatWhiteDefault;
+        $content               = array();
+        $oldWhite              = $this->eatWhiteDefault;
         $this->eatWhiteDefault = false;
 
         while ($this->matchString($m, $delim)) {
@@ -3674,7 +3676,7 @@ class scss_parser {
 
         $parts = array();
 
-        $oldWhite = $this->eatWhiteDefault;
+        $oldWhite              = $this->eatWhiteDefault;
         $this->eatWhiteDefault = false;
 
         while (true) {
@@ -3705,11 +3707,11 @@ class scss_parser {
 
     // an unbounded string stopped by $end
     protected function openString($end, &$out, $nestingOpen = null) {
-        $oldWhite = $this->eatWhiteDefault;
+        $oldWhite              = $this->eatWhiteDefault;
         $this->eatWhiteDefault = false;
 
-        $stop = array("'", '"', "#{", $end);
-        $stop = array_map(array($this, "preg_quote"), $stop);
+        $stop   = array("'", '"', "#{", $end);
+        $stop   = array_map(array($this, "preg_quote"), $stop);
         $stop[] = self::$commentMulti;
 
         $patt = '(.*?)(' . implode("|", $stop) . ')';
@@ -3765,7 +3767,7 @@ class scss_parser {
 
     // $lookWhite: save information about whitespace before and after
     protected function interpolation(&$out, $lookWhite = true) {
-        $oldWhite = $this->eatWhiteDefault;
+        $oldWhite              = $this->eatWhiteDefault;
         $this->eatWhiteDefault = true;
 
         $s = $this->seek();
@@ -3774,13 +3776,13 @@ class scss_parser {
             // TODO: don't error if out of bounds
 
             if ($lookWhite) {
-                $left = preg_match('/\s/', $this->buffer[$s - 1]) ? " " : "";
+                $left  = preg_match('/\s/', $this->buffer[$s - 1]) ? " " : "";
                 $right = preg_match('/\s/', $this->buffer[$this->count]) ? " " : "";
             } else {
                 $left = $right = false;
             }
 
-            $out = array("interpolate", $value, $left, $right);
+            $out                   = array("interpolate", $value, $left, $right);
             $this->eatWhiteDefault = $oldWhite;
             if ($this->eatWhiteDefault) $this->whitespace();
             return true;
@@ -3795,10 +3797,10 @@ class scss_parser {
 
     // returns an array of parts or a string
     protected function propertyName(&$out) {
-        $s = $this->seek();
+        $s     = $this->seek();
         $parts = array();
 
-        $oldWhite = $this->eatWhiteDefault;
+        $oldWhite              = $this->eatWhiteDefault;
         $this->eatWhiteDefault = false;
 
         while (true) {
@@ -3834,7 +3836,7 @@ class scss_parser {
 
     // comma separated list of selectors
     protected function selectors(&$out) {
-        $s = $this->seek();
+        $s         = $this->seek();
         $selectors = array();
         while ($this->selector($sel)) {
             $selectors[] = $sel;
@@ -3880,7 +3882,7 @@ class scss_parser {
     // the parts that make up
     // div[yes=no]#something.hello.world:nth-child(-2n+1)%placeholder
     protected function selectorSingle(&$out) {
-        $oldWhite = $this->eatWhiteDefault;
+        $oldWhite              = $this->eatWhiteDefault;
         $this->eatWhiteDefault = false;
 
         $parts = array();
@@ -4123,7 +4125,7 @@ class scss_parser {
         foreach (array('#{', '\\', $delim) as $lookahead) {
             $pos = strpos($this->buffer, $lookahead, $this->count);
             if ($pos !== false && $pos < $end) {
-                $end = $pos;
+                $end   = $pos;
                 $token = $lookahead;
             }
         }
@@ -4132,8 +4134,8 @@ class scss_parser {
             return false;
         }
 
-        $match = substr($this->buffer, $this->count, $end - $this->count);
-        $m = array(
+        $match       = substr($this->buffer, $this->count, $end - $this->count);
+        $m           = array(
             $match . $token,
             $match,
             $token
@@ -4175,7 +4177,7 @@ class scss_parser {
     protected function peek($regex, &$out, $from = null) {
         if (!isset($from)) $from = $this->count;
 
-        $r = '/' . $regex . '/Ais';
+        $r      = '/' . $regex . '/Ais';
         $result = preg_match($r, $this->buffer, $out, null, $from);
 
         return $result;
@@ -4212,13 +4214,14 @@ class scss_parser {
  *
  * @author Leaf Corcoran <leafot@gmail.com>
  */
-class scss_formatter {
+class scss_formatter
+{
     public $indentChar = "  ";
 
-    public $break = "\n";
-    public $open = " {";
-    public $close = "}";
-    public $tagSeparator = ", ";
+    public $break           = "\n";
+    public $open            = " {";
+    public $close           = "}";
+    public $tagSeparator    = ", ";
     public $assignSeparator = ": ";
 
     public function __construct() {
@@ -4279,7 +4282,8 @@ class scss_formatter {
  *
  * @author Leaf Corcoran <leafot@gmail.com>
  */
-class scss_formatter_nested extends scss_formatter {
+class scss_formatter_nested extends scss_formatter
+{
     public $close = " }";
 
     // adjust the depths of all children, depth first
@@ -4299,7 +4303,7 @@ class scss_formatter_nested extends scss_formatter {
         $count = count($children);
         for ($i = 0; $i < $count; $i++) {
             $depth = $children[$i]->depth;
-            $j = $i + 1;
+            $j     = $i + 1;
             if (isset($children[$j]) && $depth < $children[$j]->depth) {
                 $childDepth = $children[$j]->depth;
                 for (; $j < $count; $j++) {
@@ -4370,11 +4374,12 @@ class scss_formatter_nested extends scss_formatter {
  *
  * @author Leaf Corcoran <leafot@gmail.com>
  */
-class scss_formatter_compressed extends scss_formatter {
-    public $open = "{";
-    public $tagSeparator = ",";
+class scss_formatter_compressed extends scss_formatter
+{
+    public $open            = "{";
+    public $tagSeparator    = ",";
     public $assignSeparator = ":";
-    public $break = "";
+    public $break           = "";
 
     public function indentStr($n = 0) {
         return "";
@@ -4386,7 +4391,8 @@ class scss_formatter_compressed extends scss_formatter {
  *
  * @author Leaf Corcoran <leafot@gmail.com>
  */
-class scss_server {
+class scss_server
+{
     /**
      * Join path components
      *
@@ -4506,12 +4512,12 @@ class scss_server {
      * @return string
      */
     protected function compile($in, $out) {
-        $start = microtime(true);
-        $css = $this->scss->compile(file_get_contents($in), $in);
+        $start   = microtime(true);
+        $css     = $this->scss->compile(file_get_contents($in), $in);
         $elapsed = round((microtime(true) - $start), 4);
 
-        $v = scssc::$VERSION;
-        $t = @date('r');
+        $v   = scssc::$VERSION;
+        $t   = @date('r');
         $css = "/* compiled by scssphp $v on $t (${elapsed}s) */\n\n" . $css;
 
         file_put_contents($out, $css);
@@ -4557,7 +4563,7 @@ class scss_server {
             header('Content-type: text/css');
 
             $modifiedSince = $this->getModifiedSinceHeader();
-            $mtime = filemtime($output);
+            $mtime         = filemtime($output);
 
             if (@strtotime($modifiedSince) === $mtime) {
                 header($protocol . ' 304 Not Modified');

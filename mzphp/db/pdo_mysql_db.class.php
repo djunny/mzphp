@@ -3,12 +3,13 @@
 //可能没有安装 PDO 用常量来表示
 define('PDO_MYSQL_FETCH_ASSOC', 2);
 
-class pdo_mysql_db {
+class pdo_mysql_db
+{
 
-    var $querynum = 0;
-    var $charset;
-
-    var $conf = array();
+    var    $querynum = 0;
+    var    $charset;
+    var    $conf     = array();
+    public $debug    = 0;
 
     /**
      * __construct
@@ -19,7 +20,8 @@ class pdo_mysql_db {
         if (!class_exists('PDO')) {
             throw new Exception('PDO extension was not installed!');
         }
-        $this->conf = $db_conf;
+        $this->conf  = $db_conf;
+        $this->debug = defined('DEBUG') ? DEBUG : 0;
     }
 
 
@@ -44,7 +46,7 @@ class pdo_mysql_db {
 
             return $this->write_link;
         } else if ($var == 'read_link') {
-            $slave_count = count($this->conf['slaves']);
+            $slave_count = isset($this->conf['slaves']) ? count($this->conf['slaves']) : 0;
             // 指定主库
             if (!$slave_count) {
                 $this->read_link = $this->write_link;
@@ -66,7 +68,7 @@ class pdo_mysql_db {
      *
      * @return PDO|void
      */
-    function connect(&$db_conf, $server) {
+    function connect(&$db_conf) {
         $host = $db_conf['host'];
         if (strpos($host, ':') !== FALSE) {
             list($host, $port) = explode(':', $host);
@@ -80,7 +82,7 @@ class pdo_mysql_db {
         }
         try {
             $init_array = array(
-                PDO::ATTR_PERSISTENT => $db_conf['pconnect'],
+                PDO::ATTR_PERSISTENT => isset($db_conf['pconnect']) ? $db_conf['pconnect'] : 0,
             );
             $link       = new PDO("mysql:host={$host};port={$port};dbname={$db_conf['name']}", $db_conf['user'], $db_conf['pass'], $init_array);
             //$link->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, true);
@@ -141,7 +143,7 @@ class pdo_mysql_db {
      * @throws Exception
      */
     function query($sql, $link = 0) {
-        if (DEBUG) {
+        if ($this->debug) {
             $mtime        = explode(' ', microtime());
             $sqlstarttime = number_format(($mtime[1] + $mtime[0] - $_SERVER['starttime']), 6) * 1000;
         }
@@ -159,7 +161,7 @@ class pdo_mysql_db {
             throw new Exception('[pdo_mysql]Query Error:' . (isset($error[2]) ? "$error[2]" : '') . ',' . (DEBUG ? $sql : ''));
         }
 
-        if (DEBUG) {
+        if ($this->debug) {
             $mtime       = explode(' ', microtime());
             $sqlendttime = number_format(($mtime[1] + $mtime[0] - $_SERVER['starttime']), 6) * 1000;
             $sqltime     = round(($sqlendttime - $sqlstarttime), 3);
@@ -201,6 +203,9 @@ class pdo_mysql_db {
     function fetch_all($query, $index = '') {
         $list = array();
         while ($val = $query->fetch(PDO_MYSQL_FETCH_ASSOC)) {
+            if (!$val) {
+                continue;
+            }
             if ($index) {
                 $list[$val[$index]] = $val;
             } else {
@@ -280,13 +285,13 @@ class pdo_mysql_db {
      *                     count of all: perpage = -2
      * @param int $page    if perpage large than 0 for select page
      *                     (page - 1) * perpage
-     * @param string index
+     * @param     string   index
+     *
      * @return mixed
      */
     function select($table, $where, $order = array(), $perpage = -1, $page = 1, $fields = array(), $index = '') {
         $where_sql = $this->build_where_sql($where);
-        $field_sql = '*';
-        if (is_array($fields)) {
+        if (is_array($fields) && $fields) {
             $field_sql = implode(',', $fields);
         } else if ($fields) {
             $field_sql = $fields;
@@ -421,33 +426,35 @@ class pdo_mysql_db {
      * @return string
      */
     function build_where_sql($where) {
-        $where_sql = '';
+        $where_sql = array();
         if (is_array($where)) {
             foreach ($where as $key => $value) {
                 if (is_array($value)) {
-                    $value = array_map('addslashes', $value);
-                    $where_sql .= ' AND ' . $key . ' IN (\'' . implode("', '", $value) . '\')';
+                    $value       = array_map('addslashes', $value);
+                    $where_sql[] = $key . ' IN (\'' . implode("', '", $value) . '\')';
+                } else if (is_numeric($key)) {
+                    $where_sql[] = $value;
                 } elseif (strlen($value) > 0) {
                     switch (substr($value, 0, 1)) {
                         case '>':
                         case '<':
                         case '=':
-                            $where_sql .= ' AND ' . $key . $this->fix_where_sql($value) . '';
+                            $where_sql[] = $key . $this->fix_where_sql($value) . '';
                             break;
                         default:
-                            $where_sql .= ' AND ' . $key . ' = \'' . addslashes($value) . '\'';
+                            $where_sql[] = $key . ' = \'' . addslashes($value) . '\'';
                             break;
                     }
                 } elseif ($key) {
                     if (strpos($key, '=') !== false) {
-                        $where_sql .= ' AND ' . $key;
+                        $where_sql[] = $key;
                     }
                 }
             }
         } else if ($where) {
-            $where_sql = ' AND ' . $where;
+            $where_sql[] = $where;
         }
-        return $where_sql ? ' WHERE 1 ' . $where_sql . ' ' : '';
+        return $where_sql ? ' WHERE ' . implode(' AND ', $where_sql) . ' ' : '';
     }
 
     /**

@@ -1,7 +1,8 @@
 <?php
 
 // debug class
-class debug {
+class debug
+{
 
     public static function init() {
         error_reporting(E_ALL ^ E_DEPRECATED);
@@ -20,11 +21,11 @@ class debug {
             if ($e = error_get_last()) {
                 core::ob_clean();
                 $message = $e['message'];
-                $file = $e['file'];
-                $line = $e['line'];
+                $file    = $e['file'];
+                $line    = $e['line'];
                 if (core::R('ajax')) {
                     if (!DEBUG) {
-                        $len = strlen($_SERVER['DOCUMENT_ROOT']);
+                        $len  = strlen($_SERVER['DOCUMENT_ROOT']);
                         $file = substr($file, $len);
                     }
                     $mz_error = "[error] : $message File: $file [$line]";
@@ -58,12 +59,12 @@ class debug {
         $trace = $e->getTrace();
         if (!empty($trace) && $trace[0]['function'] == 'error_handler' && $trace[0]['class'] == 'debug') {
             $message = $e->getMessage();
-            $file = $trace[0]['args'][2];
-            $line = $trace[0]['args'][3];
+            $file    = $trace[0]['args'][2];
+            $line    = $trace[0]['args'][3];
         } else {
             $message = '[exception] : ' . $e->getMessage();
-            $file = $e->getFile();
-            $line = $e->getLine();
+            $file    = $e->getFile();
+            $line    = $e->getLine();
         }
         $message = strip_tags($message);
 
@@ -93,25 +94,25 @@ class debug {
         defined('E_USER_DEPRECATED') || define('E_USER_DEPRECATED', 16384);
 
         $error_type = array(
-            E_ERROR => '运行错误',
-            E_WARNING => '运行警告',
-            E_PARSE => '语法错误',
-            E_NOTICE => '运行通知',
-            E_CORE_ERROR => '初始错误',
-            E_CORE_WARNING => '初始警告',
-            E_COMPILE_ERROR => '编译错误',
-            E_COMPILE_WARNING => '编译警告',
-            E_USER_ERROR => '用户定义的错误',
-            E_USER_WARNING => '用户定义的警告',
-            E_USER_NOTICE => '用户定义的通知',
-            E_STRICT => '代码标准建议',
+            E_ERROR             => '运行错误',
+            E_WARNING           => '运行警告',
+            E_PARSE             => '语法错误',
+            E_NOTICE            => '运行通知',
+            E_CORE_ERROR        => '初始错误',
+            E_CORE_WARNING      => '初始警告',
+            E_COMPILE_ERROR     => '编译错误',
+            E_COMPILE_WARNING   => '编译警告',
+            E_USER_ERROR        => '用户定义的错误',
+            E_USER_WARNING      => '用户定义的警告',
+            E_USER_NOTICE       => '用户定义的通知',
+            E_STRICT            => '代码标准建议',
             E_RECOVERABLE_ERROR => '致命错误',
-            E_DEPRECATED => '代码警告',
-            E_USER_DEPRECATED => '用户定义的代码警告',
+            E_DEPRECATED        => '代码警告',
+            E_USER_DEPRECATED   => '用户定义的代码警告',
         );
 
         $errno_str = isset($error_type[$errno]) ? $error_type[$errno] : '未知错误';
-        $s = "[$errno_str] : $errstr";
+        $s         = "[$errno_str] : $errstr";
         // 线上模式放宽一些，只记录日志，不中断程序执行
         if (!in_array($errno, array(E_WARNING, E_NOTICE, E_USER_NOTICE, E_DEPRECATED))) {
             throw new Exception($s);
@@ -131,6 +132,7 @@ class debug {
      * @param array $arr  一维数组
      * @param int   $type 显示类型
      * @param boot  $html 是否转换为 HTML 实体
+     *
      * @return string
      */
     public static function arr2str($arr, $type = 3, $html = TRUE) {
@@ -143,13 +145,13 @@ class debug {
             switch ($type) {
                 case 0:
                     $k = '';
-                break;
+                    break;
                 case 1:
                     $k = "$k ";
-                break;
+                    break;
                 case 2:
                     $k = "<span>$k</span>";
-                break;
+                    break;
                 default:
                     $k = "$k = ";
             }
@@ -193,12 +195,12 @@ class debug {
         // 如果是 error_handle ，弹出第一个元素。
         if (!empty($trace) && $trace[0]['function'] == 'error_handle' && $trace[0]['class'] == 'core') {
             //array_shift($trace);
-            $line = $trace[0]['args'][3];
-            $file = $trace[0]['args'][2];
+            $line    = $trace[0]['args'][3];
+            $file    = $trace[0]['args'][2];
             $message = $trace[0]['args'][1];
         } else {
-            $line = $e->getLine();
-            $file = $e->getFile();
+            $line    = $e->getLine();
+            $file    = $e->getFile();
             $message = $e->getMessage();
         }
         $backtracelist = array();
@@ -207,9 +209,9 @@ class debug {
             if (!empty($v['args'])) {
                 if (DEBUG) {
                     if ($v['function'] == 'error_handle') {
-                        $v['class'] = '';
+                        $v['class']    = '';
                         $v['function'] = '';
-                        $args = '';
+                        $args          = '';
                     } else {
                         foreach ((array)$v['args'] as $arg) {
                             if (is_string($arg)) {
@@ -241,12 +243,12 @@ class debug {
             !isset($v['type']) && $v['type'] = '';
 
             $backtracelist[] = array(
-                'file' => $v['file'],
-                'line' => $v['line'],
+                'file'     => $v['file'],
+                'line'     => $v['line'],
                 'function' => $v['function'],
-                'class' => $v['class'],
-                'type' => $v['type'],
-                'args' => $args,
+                'class'    => $v['class'],
+                'type'     => $v['type'],
+                'args'     => $args,
             );
         }
 
@@ -256,22 +258,24 @@ class debug {
         $codelist = self::get_code($file, $line);
 
         return array(
-            'line' => $line,
-            'file' => $file,
-            'codelist' => $codelist,
-            'message' => $message,
+            'line'          => $line,
+            'file'          => $file,
+            'codelist'      => $codelist,
+            'message'       => $message,
             'backtracelist' => $backtracelist,
         );
     }
 
     /**
      * 取得代码信息
+     *
      * @param $file 文件
      * @param $line 行数
+     *
      * @return array
      */
     public static function get_code($file, $line) {
-        $arr = file($file);
+        $arr  = file($file);
         $arr2 = array_slice($arr, max(0, $line - 5), 10, true);
         if (!core::is_cmd()) {
             /*

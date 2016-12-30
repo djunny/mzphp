@@ -1,6 +1,7 @@
 <?php
 
-class spider {
+class spider
+{
     /**
      * @var int record last response code
      */
@@ -583,7 +584,7 @@ class spider {
                 } elseif (!array_pop($rst)) {
                     $rst[] = '..';
                 }
-            } elseif ($dir && $dir != '.') {
+            } elseif (strlen($dir) > 0 && $dir != '.') {
                 $rst[] = $dir;
             }
         }

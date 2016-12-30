@@ -60,23 +60,24 @@ function load_hook_cls($name) {
             require HOOK_PATH . $name . '.php';
         }
     } else {
-        if (!$loaded) {
-            $loaded   = 1;
-            $run_file = FRAMEWORK_TMP_PATH . 'hook_runtime.php';
-            if (!(@include($run_file))) {
-                $content = '';
-                // make runtime file
-                $inc_files = glob(HOOK_PATH . '*.php');
-                // load source code
-                foreach ($inc_files as $inc_file) {
-                    if (strpos($inc_file, 'hook_') !== false) {
-                        $content .= php_strip_whitespace($inc_file);
-                    }
+        if ($loaded) {
+            return;
+        }
+        $loaded   = 1;
+        $run_file = FRAMEWORK_TMP_PATH . '_hook_runtime.php';
+        if (!(@include($run_file))) {
+            $content = '';
+            // make runtime file
+            $inc_files = glob(HOOK_PATH . '*.php');
+            // load source code
+            foreach ($inc_files as $inc_file) {
+                if (strpos($inc_file, 'hook_') !== false) {
+                    $content .= php_strip_whitespace($inc_file);
                 }
-                //写入 runtime 文件
-                file_put_contents($run_file, $content);
-                require $run_file;
             }
+            //写入 runtime 文件
+            file_put_contents($run_file, $content);
+            require $run_file;
         }
     }
 }
@@ -90,7 +91,7 @@ function load_hook_cls($name) {
  */
 function get_hook($name) {
     static $hook_data = NULL;
-    $cache_file = FRAMEWORK_TMP_PATH . 'hook_cache.php';
+    $cache_file = FRAMEWORK_TMP_PATH . '_hook_cache.php';
     if ($hook_data == NULL) {
         $hook_hash = '';
         $file_time = is_file($cache_file) ? filemtime($cache_file) : 0;

@@ -3,7 +3,8 @@
 //可能没有安装 PDO 用常量来表示
 define('PDO_SQLITE_FETCH_ASSOC', 2);
 
-class pdo_sqlite_db {
+class pdo_sqlite_db
+{
 
     var $querynum = 0;
     var $link;
@@ -328,6 +329,8 @@ class pdo_sqlite_db {
                 if (is_array($value)) {
                     $value = array_map('addslashes', $value);
                     $where_sql .= ' AND ' . $key . ' IN (\'' . implode("', '", $value) . '\')';
+                } else if (is_numeric($key)) {
+                    $where_sql .= ' AND ' . $value;
                 } elseif (strlen($value) > 0) {
                     switch (substr($value, 0, 1)) {
                         case '>':

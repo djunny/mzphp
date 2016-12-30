@@ -1,19 +1,20 @@
 <?php
 
-class JSMin {
-    const ORD_LF = 10;
-    const ORD_SPACE = 32;
-    const ACTION_KEEP_A = 1;
-    const ACTION_DELETE_A = 2;
+class JSMin
+{
+    const ORD_LF            = 10;
+    const ORD_SPACE         = 32;
+    const ACTION_KEEP_A     = 1;
+    const ACTION_DELETE_A   = 2;
     const ACTION_DELETE_A_B = 3;
 
-    protected $a = '';
-    protected $b = '';
-    protected $input = '';
-    protected $inputIndex = 0;
+    protected $a           = '';
+    protected $b           = '';
+    protected $input       = '';
+    protected $inputIndex  = 0;
     protected $inputLength = 0;
-    protected $lookAhead = null;
-    protected $output = '';
+    protected $lookAhead   = null;
+    protected $output      = '';
 
     // -- Public Static Methods --------------------------------------------------
 
@@ -22,7 +23,9 @@ class JSMin {
      *
      * @uses __construct()
      * @uses min()
+     *
      * @param string $js Javascript to be minified
+     *
      * @return string
      */
     public static function minify($js) {
@@ -38,7 +41,7 @@ class JSMin {
      * @param string $input Javascript to be minified
      */
     public function __construct($input) {
-        $this->input = str_replace("\r\n", "\n", $input);
+        $this->input       = str_replace("\r\n", "\n", $input);
         $this->inputLength = strlen($this->input);
     }
 
@@ -56,6 +59,7 @@ class JSMin {
      *         - Unterminated string literal
      *         - Unterminated regular expression set in regex literal
      *         - Unterminated regular expression literal
+     *
      * @param int $command One of class constants:
      *                     ACTION_KEEP_A      Output A. Copy B to A. Get the next B.
      *                     ACTION_DELETE_A    Copy B to A. Get the next B. (Delete A).
@@ -91,8 +95,8 @@ class JSMin {
 
             case self::ACTION_DELETE_A_B:
                 $this->b = $this->next();
-                $b = &$this->b;
-                $a = &$this->a;
+                $b       = &$this->b;
+                $a       = &$this->a;
                 if ($b === '/' && (
                         $a === '(' || $a === ',' || $a === '=' ||
                         $a === ':' || $a === '[' || $a === '!' ||
@@ -143,7 +147,7 @@ class JSMin {
      * @return string|null
      */
     protected function get() {
-        $c = $this->lookAhead;
+        $c               = $this->lookAhead;
         $this->lookAhead = null;
 
         if ($c === null) {
@@ -332,7 +336,8 @@ class JSMin {
 }
 
 // -- Exceptions ---------------------------------------------------------------
-class JSMinException extends Exception {
+class JSMinException extends Exception
+{
 }
 
 ?>

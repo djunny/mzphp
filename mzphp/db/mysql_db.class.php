@@ -1,6 +1,7 @@
 <?php
 
-class mysql_db {
+class mysql_db
+{
 
     var $queries = 0;
     //var $link;
@@ -448,6 +449,8 @@ class mysql_db {
                 if (is_array($value)) {
                     $value = array_map('addslashes', $value);
                     $where_sql .= ' AND ' . $key . ' IN (\'' . implode("', '", $value) . '\')';
+                } else if (is_numeric($key)) {
+                    $where_sql .= ' AND ' . $value;
                 } elseif (strlen($value) > 0) {
                     switch (substr($value, 0, 1)) {
                         case '>':
@@ -465,7 +468,7 @@ class mysql_db {
                     }
                 }
             }
-        } elseif ($where) {
+        } else if ($where) {
             $where_sql = ' AND ' . $where;
         }
         return $where_sql ? ' WHERE 1 ' . $where_sql . ' ' : '';

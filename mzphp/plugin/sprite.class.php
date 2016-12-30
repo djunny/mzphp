@@ -1,6 +1,7 @@
 <?php
 
-class sprite {
+class sprite
+{
 
     private static $path;
 
@@ -9,7 +10,7 @@ class sprite {
     private static $output;
 
     static function process($conf) {
-        self::$path = $conf['path'];
+        self::$path  = $conf['path'];
         self::$matte = $conf['matte'] ? $conf['matte'] : 'transparent';
 
         // /home/www/sprite without extension
@@ -26,12 +27,12 @@ class sprite {
         } else if ($dh = opendir(self::$path)) {
             $imgs = array('n' => array(), 'y' => array(), 'x' => array(), 'r' => array());
             while (($file = readdir($dh)) !== false) {
-                $ext = strtolower(substr($file, strrpos($file, '.') + 1));
+                $ext      = strtolower(substr($file, strrpos($file, '.') + 1));
                 $basename = basename($file, '.' . $ext);
                 if (in_array($ext, array('png', 'gif', 'jpg', 'jpeg'))) {
                     $is_match = preg_match('/-([nxy])(-pl(\d+))?(-pr(\d+))?$/i', $basename, $matches);
                     if (!$is_match) {
-                        $matches = array(0, 'n', 0, 0, 0, 0,);
+                        $matches  = array(0, 'n', 0, 0, 0, 0,);
                         $is_match = 1;
                     }
                     if ($is_match) {
@@ -49,20 +50,20 @@ class sprite {
         }
         // start with no-repeat images
         // @TODO: build an algorithm to optimize this space by packing odd shaped images as tightly as possible into a corner; like Tetris.
-        $x = 0;
-        $y = 0;
-        $sass = $css = array('n' => '', 'y' => '', 'x' => '');
-        $css['n'] = '';
+        $x         = 0;
+        $y         = 0;
+        $sass      = $css = array('n' => '', 'y' => '', 'x' => '');
+        $css['n']  = '';
         $sass['n'] = '';
         $base_name = basename(self::$output);
-        $img_path = $base_name . '.png';
+        $img_path  = $base_name . '.png';
         foreach (array_keys((array)$imgs['n']) as $k) {
             $img = &$imgs['n'][$k];
             $x += (int)$img['padding_left'];
             $img['x'] = $x;
             $x += $img['width'] + (int)$img['padding_right'];
             $img['y'] = 0;
-            $y = max($y, $img['height']);
+            $y        = max($y, $img['height']);
             $css['n'] .= '.' . str_replace('.', '-', $k) . '  {' . "\n" .
                 '  background:url(' . $img_path . ') no-repeat ' . self::px($img['x'] * -1) . ' ' . self::px($img['y'] * -1) . '; width:' . self::px($img['width']) . '; height:' . self::px($img['height']) . ';' . "\n" .
                 '}' . "\n";
@@ -74,8 +75,8 @@ class sprite {
             $img_list[] = self::$output . '.png';
         }
 
-        $x = 0;
-        $y = 0;
+        $x        = 0;
+        $y        = 0;
         $img_path = $base_name . '-y.png';
         foreach (array_keys((array)$imgs['y']) as $k) {
             $img =& $imgs['y'][$k];
@@ -83,7 +84,7 @@ class sprite {
             $img['x'] = $x;
             $x += $img['width'] + (int)$img['padding_right'];
             $img['y'] = 0;
-            $y = max($y, $img['height']);
+            $y        = max($y, $img['height']);
             $css['y'] .= '.' . str_replace('.', '-', $k) . '  {' . "\n" .
                 '  background:url(' . $img_path . ') repeat-y ' . self::px($img['x'] * -1) . ' ' . self::px($img['y'] * -1) . '; width:' . self::px($img['width']) . ';' . "\n" .
                 '}' . "\n";
@@ -95,13 +96,13 @@ class sprite {
             $img_list[] = self::$output . '-y.png';
         }
 
-        $x = 0;
-        $y = 0;
+        $x        = 0;
+        $y        = 0;
         $img_path = $base_name . '-x.png';
         foreach (array_keys((array)$imgs['x']) as $k) {
-            $img =& $imgs['x'][$k];
+            $img      =& $imgs['x'][$k];
             $img['x'] = 0;
-            $x = max($x, $img['width']);
+            $x        = max($x, $img['width']);
             $img['y'] = $y;
             $y += $img['height'];
             $css['x'] .= '.' . str_replace('.', '-', $k) . '  {' . "\n" .
@@ -203,23 +204,24 @@ class sprite {
      * Get details about an image.
      *
      * @param $file
+     *
      * @return array|bool
      */
     static function image_get_info($file) {
         if (!is_file($file)) {
             return FALSE;
         }
-        $details = FALSE;
-        $data = @getimagesize($file);
+        $details   = FALSE;
+        $data      = @getimagesize($file);
         $file_size = @filesize($file);
         if (isset($data) && is_array($data)) {
             $extensions = array('1' => 'gif', '2' => 'jpg', '3' => 'png');
-            $extension = array_key_exists($data[2], $extensions) ? $extensions[$data[2]] : '';
-            $details = array('width' => $data[0],
-                'height' => $data[1],
-                'extension' => $extension,
-                'file_size' => $file_size,
-                'mime_type' => $data['mime']);
+            $extension  = array_key_exists($data[2], $extensions) ? $extensions[$data[2]] : '';
+            $details    = array('width'     => $data[0],
+                                'height'    => $data[1],
+                                'extension' => $extension,
+                                'file_size' => $file_size,
+                                'mime_type' => $data['mime']);
         }
         return $details;
     }
@@ -229,6 +231,7 @@ class sprite {
      *
      * @param $file
      * @param $extension
+     *
      * @return bool
      */
     static function image_gd_open($file, $extension) {

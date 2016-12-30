@@ -6,7 +6,8 @@ if (!defined('FORM_HASH_KEY')) {
 /**
  * Class misc
  */
-class misc {
+class misc
+{
 
     /**
      * redirect url
@@ -24,6 +25,7 @@ class misc {
      * get form hash
      *
      * @param string $auth_key
+     *
      * @return string
      */
     public static function form_hash($auth_key = '') {
@@ -41,6 +43,7 @@ class misc {
      * check form hash
      *
      * @param string $auth_key
+     *
      * @return bool
      */
     public static function form_submit($auth_key = '') {
@@ -94,6 +97,7 @@ class misc {
      *
      * @param        $timestamp
      * @param string $date
+     *
      * @return bool|string
      */
     public static function human_date($timestamp, $date = 'Y-m-d') {
@@ -117,10 +121,11 @@ class misc {
      * get human number
      *
      * @param $num
+     *
      * @return string
      */
     public static function human_num($num) {
-        $num > 100000 && $num = ceil($num / 10000) . '万';
+        $num > 100000 && $num = round($num / 10000, 2) . '万';
         return $num;
     }
 
@@ -128,6 +133,7 @@ class misc {
      * get human size
      *
      * @param $num
+     *
      * @return string
      */
     public static function human_size($num) {
@@ -176,6 +182,7 @@ class misc {
      * is write able
      *
      * @param $file
+     *
      * @return bool|void
      */
     public static function is_writable($file) {
@@ -299,6 +306,7 @@ class misc {
      * @param       $curpage    currrent page
      * @param       $url_prefix url prefix like : ?page=%d
      * @param array $options    to set wording
+     *
      * @return string
      */
     public static function pages($num = -1, $perpage, $curpage, $url_prefix, $options = array()) {

@@ -1,6 +1,7 @@
 <?php
 
-class tpl_static {
+class tpl_static
+{
     /**
      * @var array
      */
@@ -67,7 +68,7 @@ class tpl_static {
         }
 
         if ($changed) {
-            !is_dir($this->static_dir) && mkdir($this->static_dir, 0777, 1);
+            !is_dir($this->static_dir) && mkdir($this->static_dir, 0755, 1);
 
             // make css file
             if ($this->css_file) {
