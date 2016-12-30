@@ -8,6 +8,22 @@ enphp 在线加密：
 
 ### 更新历史
 
+[2016.12.30]
+新增：
+1. 增加 domain router 可加入默认 request 参数
+
+修复：
+1. 修复 abs_url dir='0' 的问题
+2. 修复 pdo_mysql 在 PHP7下的BUG
+3. 重命名 hook 缓存文件
+4. 修复在 cli 命令行下运行脚本太久导致运行时间显示不正确的问题.
+
+优化：
+1. 优化 CACHE 类可同时实例化多个缓存 CACHE::instance('xxx')
+2. 优化 redis 类的性能，更加友好支持 redis 扩展方法,例如 CACHE::instance('redis')->lpop();
+3. 优化模板引擎对 html 压缩
+4. 优化 mysql build_where 方法
+
 [2016.1.27]
 
 新增：
