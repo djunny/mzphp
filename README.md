@@ -699,8 +699,111 @@ RewriteRule ^(help)/(\d+)/?$ index.php\?c=article-$1&rewrite=id/$2 [L]
 注：本例中 rewrite 参数传入的分割符（/），视 **rewrite_info** 中的 **comma** 而定。
 
 ****
-****
-****
+
+### 钩子方法 HOOK
+
+通过钩子方法，能在系统任何代码处调用在 hook 中注册的方法。
+
+可用于插件或者扩展功能实现。
+
+ **运行 hook** 
+
+```
+function hook($name) {}
+```
+
+ **输出 hook** 
+
+输入 hook 一般在模板中直接调用比较多
+
+```
+function out_hook($returns, $implode = '') {}
+```
+
+### 钩子使用例子
+
+在项目根目录的 index.php 中 ，定义存放钩子类的目录（例子中定义为项目根目录的 hook目录）
+
+```
+define('HOOK_PATH', ROOT_PATH.'hook/');
+```
+
+在对应目录下，创建一个 hook 目录 。
+
+hook 目录下建立一个 hook_xxx.php，内容如下：
+
+```
+class hook_xxx {
+   static function func($abc = ''){
+       return '<a>';
+   }
+
+}
+```
+
+TIP：hook_xxx.php 和 PHP 文件 class hook_xxx 必须一致。
+
+此时，清理 tmp 目录（如果没有开启 DEBUG 模式则需要每次修改 hook 文件后操作）后，
+
+在任意代码地方调用：
+
+```
+hook('func');
+```
+
+也支持参数传入：
+
+```
+hook('func', 'abc');
+```
+
+即调用对应 hook 到所有类包含的 func 静态方法。
+
+TIP：并不是每个方法都会被 hook，记住，hook_xxx 类中带 _ (下划线)开头的静态方法是无法调用的。
+
+TIP：同理，您可以将不想公开的方法用 _ (下划线)开头，防止 hook cache 到过多的方法，这样既可以优化 hook 扫描时的性能，又可以避免外部访问到。
+
+hook 方法 返回结果类型为：Array
+
+因为在 hook 目录中，存在的同样静态方法的类会有多个，调用时每个方法都会去调用一遍，所以会以数组形式返回。
+
+循环输出或者在模板中可用
+
+```
+{out_hook(hook('func'), '<Br>')}
+```
+
+即可。
+
+ **小技能** 
+
+hook 可以按文件名顺序来排序，加排序的方法：
+
+1.hook_xxx.php
+
+2.hook_aaa.php
+
+3.hook_ccc.php
+
+数字越大，越优先加载，
+
+TIP：插件排序，非特殊情况建议不要使用~
+
+TIP： 如果调用 hook 途中，需要中止加载其它类的调用。
+
+请在方法中返回：
+
+
+```
+return array(
+    // 通知 hook 系统不需要再运行其它 hook 类里的方法了
+
+   'HOOK' => HOOK_STOP,
+    // 返回的结果
+   'return' => 'xxxxx',
+
+);
+```
 
 
 
