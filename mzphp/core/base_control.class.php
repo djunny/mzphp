@@ -7,6 +7,11 @@ class base_control
 {
 
     /**
+     * @var string run path for undefined method
+     */
+    public $run_path = '';
+
+    /**
      * config for current
      *
      * @var array
@@ -59,8 +64,33 @@ class base_control
      * @throws Exception
      */
     public function __call($method, $args) {
-        throw new Exception('base_control.class.php Not implement method：' . $method . ': (' . var_export($args, 1) . ')');
+        // get module path file
+        $file = $this->get_run_file($method);
+        if (!$file || !is_file($file)) {
+            $message = 'base_control.class.php Not implement method：' . $method . ': (' . var_export($args, 1) . ')';
+            throw new Exception($message);
+        } else {
+            include $file;
+            return true;
+        }
     }
+
+    /**
+     * get cli run file
+     *
+     * @param $method
+     *
+     * @return string
+     */
+    function get_run_file($method) {
+        $method = substr($method, 3);
+        if ($this->run_path) {
+            return $this->run_path . $method . '.php';
+        } else {
+            return '';
+        }
+    }
+
 
     /**
      * @param string $template
@@ -71,7 +101,7 @@ class base_control
         $template = $template ? $template : core::R('c') . '_' . core::R('a') . '.htm';
         if ((!$make_file && $make_file != 'NO') && $this->cache_conf) {
             // set template render content save to cache
-            $make_file = 'CACHE:memcache:' . $this->cache_conf['key'] . ':' . $this->cache_conf['time'];
+            $make_file = 'CACHE$' . $this->cache_conf['key'] . '$' . $this->cache_conf['time'];
         }
         return VI::display($this, $template, $make_file, $charset, $compress, $by_return);
     }
@@ -88,7 +118,7 @@ class base_control
             return false;
         }
         // add prefix
-        $cache_key = 'p_' . $cache_key;
+        $cache_key = 'p:' . $cache_key;
         // query for cache page is exists
         $exists = CACHE::get($cache_key);
         // set cache header for browser
@@ -137,6 +167,15 @@ class base_control
         header("Cache-Control: max-age=" . $cache_time);
         // 设置最后修改时间
         header("Last-Modified: " . $gmt_mtime);
+    }
+
+    /**
+     * 404 Page
+     *
+     * @param string $message
+     */
+    function on_404($message = '') {
+        die('PageNotFound' . (DEBUG ? ':' . $message : ''));
     }
 }
 

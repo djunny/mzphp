@@ -143,14 +143,14 @@ class tpl_static
         if (empty($file)) {
             return '';
         }
-        $file_url   = $this->static_url . $compile;
+        $file_url   = '<' . '?=CDN?' . '>' . $compile;
         $return_tag = '';
 
         $is_css = strpos($filename, '.css') !== false ? 1 : 0;
         //header('file_'.$filename.': 1');
         if (strpos($filename, '.scss') !== false || $is_css) {
             if (!isset($this->css_file[$compile])) {
-                $this->css_file[$compile] = '/*[tplStatic ' . $this->version . ' - ' . $this->expire_key . ']*/' . "\n";
+                $this->css_file[$compile] = '/*[tplStatic ' . $this->version . ' - ' . $this->expire_key . ']*/';
                 $return_tag               = '<link rel="stylesheet" href="' . $file_url . '?' . $this->expire_key . '" />';
             }
 

@@ -236,6 +236,9 @@ class core
      * @return string
      */
     public static function json_encode($data) {
+        if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
+            return json_encode($data, JSON_UNESCAPED_UNICODE);
+        }
         if (is_array($data) || is_object($data)) {
             $is_list = is_array($data) && (empty($data) || array_keys($data) === range(0, count($data) - 1));
             if ($is_list) {
@@ -526,8 +529,9 @@ class core
         $para = str_replace(array('&', '='), $ds, $para);
 
         // get anchor
-        list($para, $anchor) = explode('#', $para, 2);
-
+        if (strpos($para, '#') !== false) {
+            list($para, $anchor) = explode('#', $para, 2);
+        }
         if (!$para) {
             // delete last comma
             $pre = substr($pre, 0, -1);

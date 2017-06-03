@@ -71,7 +71,12 @@ class base_model
      * @return mixed
      */
     public function select($where, $order = 0, $perpage = -1, $page = 1, $index = '') {
-        return DB::select($this->table, $where, $order, $perpage, $page, $index);
+        $table = $this->table;
+        if (is_array($where) && isset($where['fields'])) {
+            $table .= ':' . (is_array($where['fields']) ? implode(',', $where['fields']) : $where['fields']);
+            unset($where['fields']);
+        }
+        return DB::select($table, $where, $order, $perpage, $page, $index);
     }
 
     /**

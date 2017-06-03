@@ -26,7 +26,15 @@ class redis_cache
         if (!$this->redis) {
             throw new Exception('PHP.ini Error: Redis extension not loaded.');
         }
-        if ($this->redis->connect($this->conf['host'], $this->conf['port'])) {
+        if ($conf['pconnect']) {
+            $res = $this->redis->pconnect($this->conf['host'], $this->conf['port']);
+        } else {
+            $res = $this->redis->connect($this->conf['host'], $this->conf['port']);
+        }
+        if ($res) {
+            if (isset($this->conf['pass']) && $this->conf['pass']) {
+                $this->redis->auth($this->conf['pass']);
+            }
             // set time out
             $this->conf['timeout'] && $this->redis->setOption(Redis::OPT_READ_TIMEOUT, $this->conf['timeout']);
             // set with out Fserialize
@@ -37,8 +45,9 @@ class redis_cache
             isset($this->conf['table']) && $this->redis->select($this->conf['table']);
             return $this->redis;
         } else {
+            $error       = $this->redis->getLastError();
             $this->redis = false;
-            throw new Exception('Can not connect to Redis host.');
+            throw new Exception('Can not connect to Redis host.' . var_dump($res) . $error);
         }
     }
 

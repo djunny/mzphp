@@ -199,8 +199,8 @@ class template
             // cache current content 600s in memcache use 'url_key'
             // CACHE:memcache:url_key:600
             // CACHE:namespace:memcache_key:time
-            if (substr($makefile, 0, 6) == 'CACHE:') {
-                list(, , $key, $time) = explode(':', $makefile);
+            if (substr($makefile, 0, 6) == 'CACHE$') {
+                list(, $key, $time) = explode('$', $makefile, 4);
                 $cache_data = array(
                     'body' => $save_body,
                     'time' => $time,
@@ -661,7 +661,7 @@ class template
     private function funtag_callback($matchs) {
         $search              = '<!--[func=' . count($this->tag_search) . ']-->';
         $this->tag_search[]  = $search;
-        $this->tag_replace[] = '<? if(false !== ($_val=' . $matchs[1] . '))echo $_val;?>';
+        $this->tag_replace[] = '<?php echo ' . $matchs[1] . '?>';
         return $search;
     }
 
@@ -704,7 +704,7 @@ class template
         $k         = $this->stripvtag($k);
         $v         = $this->stripvtag($v);
         $statement = str_replace("\\\"", '"', $statement);
-        return $k ? "<? if(!empty($arr)) { foreach($arr as $k=>&$v) {?>$statement<? }}?>" : "<? if(!empty($arr)) { foreach($arr as &$v) {?>$statement<? }} ?>";
+        return $k ? "<? if(!empty($arr)) { foreach($arr as $k=>$v) {?>$statement<? }}?>" : "<? if(!empty($arr)) { foreach($arr as $v) {?>$statement<? }} ?>";
     }
 }
 

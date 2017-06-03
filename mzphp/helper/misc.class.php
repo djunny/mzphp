@@ -16,6 +16,10 @@ class misc
      * @param int $code
      */
     public static function R($url, $code = 301) {
+        if ($code == 'js') {
+            echo '<script>location.href="' . $url . '";</script>';
+            exit;
+        }
         ob_end_clean();
         header('Location: ' . $url, true, $code);
         exit;
@@ -412,6 +416,18 @@ class misc
             $_SERVER['is_robot'] = false;
         }
         return $_SERVER['is_robot'];
+    }
+
+    /**
+     * 取得当天周几
+     *
+     * @param $time
+     *
+     * @return string
+     */
+    public static function human_week($time) {
+        static $week_array = array("日", "一", "二", "三", "四", "五", "六");
+        return '周' . $week_array[date("w", $time)];
     }
 
 }

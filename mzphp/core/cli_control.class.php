@@ -3,7 +3,9 @@
 /**
  * Class cli_control
  */
-class cli_control extends base_control {
+class cli_control extends base_control
+{
+
 
     function __construct(&$conf) {
         if (!core::is_cmd()) {
@@ -11,6 +13,23 @@ class cli_control extends base_control {
         }
         parent::__construct($conf);
     }
+
+    /**
+     * call undefined method
+     *
+     * @param $method
+     * @param $param
+     */
+    public function __call($method, $param) {
+        $file = $this->get_run_file($method);
+        if (!$file || !is_file($file)) {
+            log::info('NotFound', $method);
+            exit;
+        } else {
+            include $file;
+        }
+    }
+
 }
 
 ?>

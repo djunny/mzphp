@@ -430,8 +430,15 @@ class pdo_mysql_db
         if (is_array($where)) {
             foreach ($where as $key => $value) {
                 if (is_array($value)) {
-                    $value       = array_map('addslashes', $value);
-                    $where_sql[] = $key . ' IN (\'' . implode("', '", $value) . '\')';
+                    if (in_array($value[0], array('IN', 'NOT IN'))) {
+                        $value[1]    = array_map(array($this, 'sql_quot'), $value[1]);
+                        $where_sql[] = $key . ' ' . $value[0] . ' (\'' . implode("', '", $value[1]) . '\')';
+                    } else if ($value[0] && in_array($value[0], array('>=', '<=', '>', '<', '<>'))) {
+                        $where_sql[] = $key . $value[0] . '\'' . $this->sql_quot($value[1]) . '\'';
+                    } else {
+                        $value       = array_map(array($this, 'sql_quot'), $value);
+                        $where_sql[] = $key . ' IN (\'' . implode("', '", $value) . '\')';
+                    }
                 } else if (is_numeric($key)) {
                     $where_sql[] = $value;
                 } elseif (strlen($value) > 0) {
