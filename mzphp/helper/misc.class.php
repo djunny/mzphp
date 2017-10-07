@@ -216,12 +216,25 @@ class misc
     }
 
 
-    //获取文件名后缀
+    /**
+     * get extension from filename
+     *
+     * @param string $filename
+     *
+     * @return string
+     */
     public static function ext($filename) {
         return strtolower(trim(substr(strrchr($filename, '.'), 1)));
     }
 
-    // 替代 scandir, safe_mode
+    /**
+     * scan dir
+     *
+     * @param string $dir
+     * @param array  $exts
+     *
+     * @return array
+     */
     public static function scandir($dir, $exts = array()) {
         if (!is_dir($dir)) {
             return array();
@@ -248,11 +261,26 @@ class misc
         return $arr;
     }
 
-    // 递归删除目录，这个函数比较危险，传参一定要小心
-    public static function rmdir($dir, $keepdir = 0) {
-        if ($dir == '/' || $dir == '../') return FALSE;// 不允许删除根目录，避免程序意外删除数据。
-        if (!is_dir($dir)) return FALSE;
-        substr($dir, -1, 1) != '/' && $dir .= '/';
+    /**
+     * rm dir
+     *
+     * @param string $dir      directory path
+     * @param int    $keep_dir to keep path exists
+     *
+     * @return bool
+     */
+    public static function rmdir($dir, $keep_dir = 0) {
+        // 不允许删除根目录，避免程序意外删除数据。
+        if ($dir == '/' || $dir == '../') {
+            return FALSE;
+        }
+        // dir not exists
+        if (!is_dir($dir)) {
+            return FALSE;
+        }
+        if (substr($dir, -1, 1) != '/') {
+            $dir .= '/';
+        }
         $files = self::scandir($dir);
         foreach ($files as $file) {
             if ($file == '.' || $file == '..') continue;
@@ -263,11 +291,13 @@ class misc
                 } catch (Exception $e) {
                 }
             } else {
+                // deep remove
                 self::rmdir($filepath . '/');
             }
         }
+        // remove old path
         try {
-            if (!$keepdir) rmdir($dir);
+            if (!$keep_dir) rmdir($dir);
         } catch (Exception $e) {
         }
         return TRUE;
@@ -276,8 +306,8 @@ class misc
     /**
      * copy dir
      *
-     * @param        $source
-     * @param        $dest
+     * @param string $source
+     * @param string $dest
      * @param string $diffDir
      */
     function copy($source, $dest) {
@@ -305,11 +335,11 @@ class misc
     /**
      * generate multi page
      *
-     * @param int   $num        number of record count(set 0, can be show prev and next page)
-     * @param       $perpage    pagesize for prepage
-     * @param       $curpage    currrent page
-     * @param       $url_prefix url prefix like : ?page=%d
-     * @param array $options    to set wording
+     * @param int    $num        number of record count(set 0, can be show prev and next page)
+     * @param int    $perpage    pagesize for prepage
+     * @param int    $curpage    currrent page
+     * @param string $url_prefix url prefix like : ?page=%d
+     * @param array  $options    to set wording
      *
      * @return string
      */
@@ -421,7 +451,7 @@ class misc
     /**
      * 取得当天周几
      *
-     * @param $time
+     * @param int $time
      *
      * @return string
      */

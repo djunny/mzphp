@@ -150,7 +150,7 @@ class tpl_static
         //header('file_'.$filename.': 1');
         if (strpos($filename, '.scss') !== false || $is_css) {
             if (!isset($this->css_file[$compile])) {
-                $this->css_file[$compile] = '/*[tplStatic ' . $this->version . ' - ' . $this->expire_key . ']*/';
+                $this->css_file[$compile] = '/*[CDN]*/';
                 $return_tag               = '<link rel="stylesheet" href="' . $file_url . '?' . $this->expire_key . '" />';
             }
 
@@ -180,7 +180,7 @@ class tpl_static
             $this->css_file[$compile] .= $css_body;
         } else if (strpos($filename, '.js') !== false) {
             if (!isset($this->js_file[$compile])) {
-                $this->js_file[$compile] = '/*[tplStatic ' . $this->version . ' - ' . $this->expire_key . ']*/' . "\n";
+                $this->js_file[$compile] = '/*[CDN]*/';
                 $return_tag              = '<script src="' . $file_url . '?' . $this->expire_key . '"></' . 'script>';
             }
 

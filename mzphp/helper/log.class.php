@@ -88,8 +88,8 @@ class log
             $log .= self::dump_var($arg_list[$i]);
         }
         $usetime = core::usedtime();
-        if ($usetime > 1000 * 360 * 60) {
-            $usetime = round($usetime / (1000 * 60), 3) . 'h';
+        if ($usetime > 1000 * 3600) {
+            $usetime = round($usetime / (1000 * 3600), 3) . 'h';
         } else if ($usetime > 1000 * 360) {
             $usetime = round($usetime / (1000 * 60), 3) . 'm';
         } else if ($usetime > 1000 * 60) {

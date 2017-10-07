@@ -30,6 +30,13 @@ class cli_control extends base_control
         }
     }
 
+    /**
+     *
+     */
+    public function clean_memory() {
+        unset($_SERVER['sqls'], $_SERVER['cache'], $_SERVER['sphinx'], $_SERVER['log']);
+    }
+
 }
 
 ?>

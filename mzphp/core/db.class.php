@@ -3,7 +3,8 @@
 /**
  * Class DB
  */
-class DB {
+class DB
+{
     /**
      * type of database
      *
@@ -126,37 +127,37 @@ class DB {
     /**
      * select table
      *
-     * @param        $table   forexample:
-     *                        article
-     *                        article:id,title
-     *                        article:*
-     * @param        $where   forexample:
-     *                        'a>1'
-     *                        array('a'=>1)
-     * @param        $order   forexample:
-     *                        ' id DESC'
-     *                        array(' id DESC', ' name ASC')
-     * @param int    $perpage limit for perpage show number,
-     *                        first of row: perpage = 0
-     *                        fetch all: perpage = -1
-     *                        count of all: perpage = -2
-     * @param int    $page    if perpage large than 0 for select page
-     *                        (page - 1) * perpage
-     * @param string $index   return index field e.g id
+     * @param string           $table    forexample:
+     *                                   article
+     *                                   article:id,title
+     *                                   article:*
+     * @param string|array|int $where    forexample:
+     *                                   'a>1'
+     *                                   array('a'=>1)
+     * @param string|array|int $order    forexample:
+     *                                   ' id DESC'
+     *                                   array(' id DESC', ' name ASC')
+     * @param int              $pagesize limit for per page show count,
+     *                                   first of row: pagesize = 0
+     *                                   fetch all: pagesize = -1
+     *                                   count of all: pagesize = -2
+     * @param int              $page     if pagesize is large than 0 for select page
+     *                                   (page - 1) * pagesize
+     * @param string           $index    return index field e.g id
      *
      * @return mixed
      */
-    public static function select($table, $where, $order = array(), $perpage = -1, $page = 1, $index = '') {
+    public static function select($table, $where, $order = array(), $pagesize = -1, $page = 1, $index = '') {
         if (strpos($table, ':') === false) {
             $fields = '*';
         } else {
             list($table, $fields) = explode(':', $table);
         }
-        if ($perpage == -2) {
+        if ($pagesize == -2) {
             $fields = 'count(*) AS C';
         }
-        $result = self::instance()->select(self::table($table), $where, $order, $perpage, $page, $fields, $index);
-        if ($perpage == -2) {
+        $result = self::instance()->select(self::table($table), $where, $order, $pagesize, $page, $fields, $index);
+        if ($pagesize == -2) {
             return $result[0]['C'];
         } else {
             return $result;

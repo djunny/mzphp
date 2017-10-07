@@ -111,21 +111,31 @@ class pdo_sqlite_db
      *
      * @return mixed
      */
-    function fetch_array($query, $result_type = PDO_SQLITE_FETCH_ASSOC/*PDO::FETCH_ASSOC*/) {
-        return $query->fetch($result_type);
+    function fetch_array($query, $result_type = PDO_SQLITE_FETCH_ASSOC/*PDO::FETCH_ASSOC*/, $process_item_func = false) {
+        $res = $query->fetch($result_type);
+        if ($process_item_func instanceof \Closure) {
+            $process_item_func($res);
+        }
+        return $res;
     }
 
     /**
      * fetch all records
      *
-     * @param string $query
-     * @param string $index
+     * @param string          $query
+     * @param string          $index
+     * @param Closure|boolean $callback
      *
      * @return mixed
      */
-    function fetch_all($query, $index = '') {
-        $list = array();
+    function fetch_all($query, $index = '', $callback = false, $process_item_func = false) {
+        $list        = array();
+        $is_callback = $process_item_func instanceof \Closure ? true : false;
         while ($val = $query->fetch(PDO_MYSQL_FETCH_ASSOC)) {
+            // process list item
+            if ($is_callback) {
+                $process_item_func($val);
+            }
             if ($index) {
                 $list[$val[$index]] = $val;
             } else {
@@ -187,20 +197,34 @@ class pdo_sqlite_db
 
 
     /**
-     * select table
+     * select table by condition
      *
-     * @param        $table
-     * @param        $where
-     * @param array  $order
-     * @param int    $perpage
-     * @param int    $page
-     * @param array  $fields
-     * @param string $index
+     * @param string       $table         forexample:
+     *                                    article
+     *                                    article:id,title
+     *                                    article:*
+     * @param string|array $where         forexample:
+     *                                    'a>1'
+     *                                    array('a'=>1)
+     * @param string|array $order         forexample:
+     *                                    ' id DESC'
+     *                                    array(' id DESC', ' name ASC')
+     * @param int          $pagesize      limit for per page show count,
+     *                                    first of row: pagesize = 0
+     *                                    fetch all: pagesize = -1
+     *                                    count of all: pagesize = -2
+     * @param int          $page          if pagesize large than 0 for select page
+     *                                    (page - 1) * pagesize
+     * @param string       $index         return index field for list
      *
      * @return mixed
-     * @throws Exception
      */
-    function select($table, $where, $order = array(), $perpage = -1, $page = 1, $fields = array(), $index = '') {
+    function select($table, $where, $order = array(), $pagesize = -1, $page = 1, $fields = array(), $index = '') {
+        $callback = false;
+        if (isset($where['callback'])) {
+            $callback = $where['callback'];
+            unset($where['callback']);
+        }
         $where_sql = $this->build_where_sql($where);
         $field_sql = '*';
         if (is_array($fields)) {
@@ -210,13 +234,13 @@ class pdo_sqlite_db
         } else {
             $field_sql = '*';
         }
-        $start       = ($page - 1) * $perpage;
-        $fetch_first = $perpage == 0 ? true : false;
-        $fetch_all   = $perpage == -1 ? true : false;
-        $fetch_count = $perpage == -2 ? true : false;
+        $start       = ($page - 1) * $pagesize;
+        $fetch_first = $pagesize == 0 ? true : false;
+        $fetch_all   = $pagesize == -1 ? true : false;
+        $fetch_count = $pagesize == -2 ? true : false;
         $limit_sql   = '';
         if (!$fetch_first && !$fetch_all && !$fetch_count) {
-            $limit_sql = ' LIMIT ' . $start . ',' . $perpage;
+            $limit_sql = ' LIMIT ' . $start . ',' . $pagesize;
         }
 
         $order_sql = '';
@@ -227,9 +251,9 @@ class pdo_sqlite_db
         $sql   = 'SELECT ' . $field_sql . ' FROM ' . $table . $where_sql . $order_sql . $limit_sql;
         $query = $this->query($sql);;
         if ($fetch_first) {
-            return $this->fetch_array($query);
+            return $this->fetch_array($query, $callback);
         } else {
-            return $this->fetch_all($query, $index);
+            return $this->fetch_all($query, $index, $callback);
         }
     }
 
@@ -381,7 +405,14 @@ class pdo_sqlite_db
      * @return mixed
      */
     function sql_quot($sql) {
-        $sql = str_replace(array('\\', "\0", "\n", "\r", "'", "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\Z'), $sql);
+        $sql = strtr($sql, array(
+            '\\'   => '\\\\',
+            "\0"   => '\\0',
+            "\n"   => '\\n',
+            "\r"   => '\\r',
+            "'"    => "\\'",
+            "\x1a" => '\\Z',
+        ));
         return $sql;
     }
 

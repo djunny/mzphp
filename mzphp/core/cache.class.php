@@ -44,11 +44,12 @@ class CACHE
         if ($default_cache && !$cache_name) {
             $cache_name = $default_cache;
         }
-        if (is_null($default_cache) || !isset(self::$instance[$cache_name])) {
+        $default_is_null = is_null($default_cache);
+        if ($default_is_null || !isset(self::$instance[$cache_name])) {
             //find cache engine
             foreach (self::$cache_conf as $type => $conf) {
                 // default cache is first cache conf key
-                if (is_null($default_cache)) {
+                if ($default_is_null) {
                     $default_cache = $type;
                     !$cache_name && $cache_name = $type;
                 }
