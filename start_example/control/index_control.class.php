@@ -78,8 +78,8 @@ class index_control extends common_control {
     }
 
     function on_fetch() {
-        $url = C::P('url', 'http://baidu.com/');
-        $html = spider::fetch_url($url);
+        $url = C::P('url', 'https://baidu.com/');
+        $html = spider::GET($url);
         VI::assign('url', $url);
         VI::assign('html', $html);
         // default show {$control}_{$action}.htm
