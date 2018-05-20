@@ -45,6 +45,10 @@ return array(
 			'pre' => 'bbs_',
 		),
 	),
+	// 泛域名解析方法
+	'domain_init' => 'domain_init',
+	// 泛域名解析脚本
+	'domain_init' => 'domain_init',
 	// 唯一识别ID
 	'app_id' => 'start_example',
 	
