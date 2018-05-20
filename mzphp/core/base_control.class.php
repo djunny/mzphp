@@ -112,6 +112,8 @@ class base_control
      *
      * @param string $cache_key  current page cache key
      * @param int    $cache_time current page cache time
+     *
+     * @return mixed
      */
     public function cache_page($cache_key, $cache_time = 60) {
         if ($cache_time < 1) {
@@ -125,9 +127,17 @@ class base_control
         // cache exists
         if ($exists !== false && !is_null($exists)) {
             // get expire and return 304 Not Modified header
-            $file_time = $exists['time'];
+            if (isset($exists['time'])) {
+                // todo remove
+                $file_time = $exists['time'];
+                $body      = $exists['body'];
+            } else {
+                list($file_time, $body) = $exists;
+            }
+            unset($exists);
+            $file_time = $file_time - $cache_time;
             $gmt_mtime = gmdate('D, d M Y H:i:s', $file_time) . ' GMT';
-            $this->set_cache_header($cache_time, $exists['time']);
+            $this->set_cache_header($cache_time, $file_time);
             // check client has modified cache
             if (stripos($_SERVER['HTTP_IF_MODIFIED_SINCE'], $gmt_mtime) !== false) {
                 header($_SERVER['SERVER_PROTOCOL'] . " 304 Not Modified", true, 304);
@@ -137,10 +147,10 @@ class base_control
             // because template is default gzencode for content
             if (stripos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false) {
                 header('Content-Encoding: gzip');
-                echo $exists['body'];
+                echo $body;
             } else {
                 // gzdecode content
-                echo gzinflate(substr($exists['body'], 0x0a, -8));
+                echo gzinflate(substr($body, 0x0a, -8));
             }
             exit;
         }
@@ -148,8 +158,9 @@ class base_control
         // save cache conf for show bind template
         $this->cache_conf = array(
             'key'  => $cache_key,
-            'time' => $cache_time,
+            'time' => $_SERVER['time'] + $cache_time,
         );
+        return $this->cache_conf;
     }
 
     /**

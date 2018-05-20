@@ -31,15 +31,6 @@ class DB
     private static $instance = NULL;
 
     /**
-     * init database by config
-     *
-     * @param $conf
-     */
-    public static function init_db_config(&$conf) {
-        self::$db_conf = $conf;
-    }
-
-    /**
      * get instance
      *
      * @return null
@@ -47,11 +38,12 @@ class DB
     public static function instance() {
         if (is_null(self::$instance)) {
             //find db engine
-            foreach (self::$db_conf as $type => $conf) {
+            $db_conf = &core::$conf['db'];
+            foreach ($db_conf as $type => $conf) {
                 $db_enigne          = $type . '_db';
                 self::$db_type      = $type;
                 self::$db_table_pre = isset($conf['tablepre']) ? $conf['tablepre'] : '';
-                self::$instance     = new $db_enigne($conf);
+                self::$instance     = new $db_enigne($db_conf[$type]);
                 break;
             }
         }
@@ -228,7 +220,7 @@ class DB
      *                            or T()->update(array(), $primary_id)
      *                            your must set $primary_key
      *
-     * @return mixed
+     * @return base_model|mixed
      */
     public static function T($table, $primary_key = 'id') {
         static $models = array();

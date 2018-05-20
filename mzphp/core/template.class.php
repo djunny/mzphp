@@ -201,9 +201,10 @@ class template
             // CACHE:namespace:memcache_key:time
             if (substr($makefile, 0, 6) == 'CACHE$') {
                 list(, $key, $time) = explode('$', $makefile, 4);
+                // compress key
                 $cache_data = array(
-                    'body' => $save_body,
-                    'time' => $time,
+                    $time,
+                    $save_body,
                 );
                 CACHE::set($key, $cache_data, $time);
             } else {
@@ -416,7 +417,7 @@ class template
      *
      * @return string
      */
-    private function compress_html(&$html_source) {
+    public function compress_html(&$html_source) {
         // keep tag
         $keep_tag = array('pre', 'textarea', 'script', 'style', 'code');
         // replace if

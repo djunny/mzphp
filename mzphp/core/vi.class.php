@@ -3,7 +3,8 @@
 /**
  * Class VI
  */
-class VI {
+class VI
+{
     /**
      * instance for VI
      *
@@ -49,6 +50,28 @@ class VI {
      */
     public static function assign_value($var, $val) {
         self::instance()->assign_value($var, $val);
+    }
+
+    /**
+     * bind values
+     *
+     * @param $var
+     */
+    public static function bind(&$var) {
+        foreach ($var as $key => $val) {
+            self::instance()->assign($key, $var[$key]);
+        }
+    }
+
+    /**
+     * bind values
+     *
+     * @param $var
+     */
+    public static function bind_value($var) {
+        foreach ($var as $key => $val) {
+            self::instance()->assign_value($key, $var[$key]);
+        }
     }
 
     /**

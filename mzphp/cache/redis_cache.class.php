@@ -17,7 +17,7 @@ class redis_cache
      */
     public function __construct(&$conf) {
         $this->redis = false;
-        $this->conf  = $conf;
+        $this->conf  = &$conf;
         if (extension_loaded('Redis')) {
             $this->redis = new Redis;
         } else {
@@ -139,6 +139,7 @@ class redis_cache
             foreach ($datas as &$data) {
                 $data = $this->decode($data);
             }
+            unset($data);
             return $datas;
         }
     }

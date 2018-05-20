@@ -54,7 +54,7 @@ if (DEBUG > 0) {
         $inc_files = glob(FRAMEWORK_PATH . '*/*.class.php');
         // 加载除debug、base_、plugin目录的文件
         foreach ($inc_files as $inc_file) {
-            if (strpos($inc_file, 'base_') === false && strpos($inc_file, 'debug/') === false && strpos($inc_file, 'plugin/') === false) {
+            if (strpos($inc_file, 'base_') === false/* && strpos($inc_file, 'debug/') === false*/ && strpos($inc_file, 'plugin/') === false) {
                 $content .= php_strip_whitespace($inc_file);
             }
         }

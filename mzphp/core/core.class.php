@@ -235,17 +235,17 @@ class core
      *
      * @return string
      */
-    public static function json_encode($data) {
+    public static function json_encode($data, $self_process = 0) {
         if (version_compare(PHP_VERSION, '5.4.0', '>=')) {
-            return json_encode($data, JSON_UNESCAPED_UNICODE);
+            return json_encode($data, 320);
         }
         if (is_array($data) || is_object($data)) {
             $is_list = is_array($data) && (empty($data) || array_keys($data) === range(0, count($data) - 1));
             if ($is_list) {
-                $json = '[' . implode(',', array_map(array('core', 'json_encode'), $data)) . ']';
+                $json = '[' . implode(',', array_map(array('core', 'json_encode'), $data, 1)) . ']';
             } else {
                 $items = Array();
-                foreach ($data as $key => $value) $items[] = self::json_encode("$key") . ':' . self::json_encode($value);
+                foreach ($data as $key => $value) $items[] = self::json_encode("$key", 1) . ':' . self::json_encode($value, 1);
                 $json = '{' . implode(',', $items) . '}';
             }
         } elseif (is_string($data)) {
@@ -386,13 +386,13 @@ class core
      */
     public static function autoload_handle($classname) {
         $conf = &core::$conf;
-        if (!class_exists($classname)) {
+        if (!class_exists($classname) && !trait_exists($classname)) {
             $modelfile = self::model_file($conf, $classname);
             if ($modelfile) {
                 include $modelfile;
             }
         }
-        if (!class_exists($classname, false)) {
+        if (!class_exists($classname, false) && !trait_exists($classname)) {
             throw new Exception('class ' . $classname . ' does not exists');
         }
         return true;
@@ -406,16 +406,40 @@ class core
      *
      * @return string
      */
-    public static function model_file($conf, $model) {
+    public static function model_file(&$conf, $model) {
         //search model file
-        $model_file = '';
-        foreach ($conf['model_path'] as &$path) {
-            if (is_file($path . $model . '.class.php')) {
-                $model_file = $path . $model . '.class.php';
-                break;
+        $is_namespace = strpos($model, '\\') !== false;
+        // replace namespace
+        $model = str_replace('\\', DIRECTORY_SEPARATOR, $model);
+        if ($is_namespace) {
+            $model_file = self::_model_file($conf, $model, '');
+            if (!$model_file) {
+                $model_file = self::_model_file($conf, $model, '.class');
+            }
+        } else {
+            $model_file = self::_model_file($conf, $model, '.class');
+            if (!$model_file) {
+                $model_file = self::_model_file($conf, $model, '');
             }
         }
         return $model_file;
+    }
+
+    /**
+     * get model file
+     *
+     * @param        $model
+     * @param string $ext
+     *
+     * @return string
+     */
+    private static function _model_file(&$conf, $model, $ext = '.class') {
+        foreach ($conf['model_path'] as &$path) {
+            if (is_file($path . $model . $ext . '.php')) {
+                return $path . $model . $ext . '.php';
+            }
+        }
+        return '';
     }
 
     /**
@@ -621,18 +645,15 @@ class core
      * @param array $conf
      */
     public static function init(&$conf) {
-        self::init_conf_by_domain($conf);
         self::$conf = &$conf;
+        // init domain will fetch by cache
+        self::init_conf_by_domain(self::$conf);
         // init
-        self::init_timezone($conf);
-        self::init_supevar($conf);
+        self::init_timezone(self::$conf);
+        self::init_supevar(self::$conf);
         //self::init_ip();
         self::init_set();
         self::init_handle();
-        DB::init_db_config($conf['db']);
-        if (isset($conf['cache']) && $conf['cache']) {
-            CACHE::init_cache_config($conf['cache']);
-        }
         // check magic quotes
         if (get_magic_quotes_gpc()) {
             self::stripslashes($_GET);
@@ -670,6 +691,28 @@ class core
             return;
         }
         $host = preg_replace('#(\:\d+$|[^a-zA-Z\d\-\.]+)#is', '', $_SERVER['HTTP_HOST']);
+
+        // domain init method for *.xxx.com
+        if (isset($conf['domain_init']) && $conf['domain_init'] && function_exists($conf['domain_init'])) {
+            // callback method
+            $call_method = $conf['domain_init'];
+            $domain_res  = $call_method($host);
+            // return array is data
+            if (is_array($domain_res)) {
+                $domain_conf[$host] = $domain_res;
+            } else if (is_string($domain_res)) {
+                // load return file list
+                $domain_file_list   = explode('|', $domain_res);
+                $domain_conf[$host] = array();
+                foreach ($domain_file_list as $domain_file) {
+                    $domain_conf[$host] = array_merge($domain_conf[$host], include($domain_file));
+                }
+            } else if ($domain_res === false) {
+                //return false could not load host file
+                //$domain_conf[$host] = [];
+            }
+        }
+
         if (!isset($domain_conf[$host])) {
             $domain_file = $conf['domain_path'] . $host . '.php';
             if (is_file($domain_file)) {

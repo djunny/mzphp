@@ -20,7 +20,7 @@ class pdo_mysql_db
         if (!class_exists('PDO')) {
             throw new Exception('PDO extension was not installed!');
         }
-        $this->conf  = $db_conf;
+        $this->conf = &$db_conf;
         $this->debug = defined('DEBUG') ? DEBUG : 0;
     }
 
@@ -306,6 +306,14 @@ class pdo_mysql_db
             $callback = $where['callback'];
             unset($where['callback']);
         }
+        $group_sql = '';
+        if (isset($where['group'])) {
+            $group_sql = $where['group'];
+            if ($group_sql) {
+                $group_sql = 'GROUP BY ' . preg_replace('#\W#is', '', $group_sql);
+            }
+            unset($where['group']);
+        }
         $where_sql = $this->build_where_sql($where);
         if (is_array($fields) && $fields) {
             $field_sql = implode(',', $fields);
@@ -328,7 +336,7 @@ class pdo_mysql_db
             $order_sql = $this->build_order_sql($order);
         }
 
-        $sql   = 'SELECT ' . $field_sql . ' FROM ' . $table . $where_sql . $order_sql . $limit_sql;
+        $sql   = 'SELECT ' . $field_sql . ' FROM ' . $table . $where_sql . $group_sql . $order_sql . $limit_sql;
         $query = $this->query($sql);;
         if ($fetch_first) {
             return $this->fetch_array($query, PDO_MYSQL_FETCH_ASSOC, $callback);
@@ -446,11 +454,13 @@ class pdo_mysql_db
         if (is_array($where)) {
             foreach ($where as $key => $value) {
                 if (is_array($value)) {
+                    // trim right _
+                    $key = rtrim($key, '_');
                     if (isset($value[0]) && $value[0] && in_array($value[0], array('IN', 'NOT IN'))) {
                         $value[1]    = array_map(array($this, 'sql_quot'), $value[1]);
                         $where_sql[] = $key . ' ' . $value[0] . ' (\'' . implode("', '", $value[1]) . '\')';
-                    } else if ($value[0] && in_array($value[0], array('>=', '<=', '>', '<', '<>', '='))) {
-                        $where_sql[] = $key . $value[0] . '\'' . $this->sql_quot($value[1]) . '\'';
+                    } else if ($value[0] && in_array($value[0], array('>=', '<=', '>', '<', '<>', '=', 'LIKE'))) {
+                        $where_sql[] = $key . ' ' . $value[0] . '\'' . $this->sql_quot($value[1]) . '\'';
                     } else {
                         $value       = array_map(array($this, 'sql_quot'), $value);
                         $where_sql[] = $key . ' IN (\'' . implode("', '", $value) . '\')';

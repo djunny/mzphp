@@ -27,14 +27,6 @@ class CACHE
      */
     public static $instance = array();
 
-    /**
-     * init cache
-     *
-     * @param $conf
-     */
-    public static function init_cache_config(&$conf) {
-        self::$cache_conf = &$conf;
-    }
 
     /**
      * @return object instance of cache
@@ -47,7 +39,8 @@ class CACHE
         $default_is_null = is_null($default_cache);
         if ($default_is_null || !isset(self::$instance[$cache_name])) {
             //find cache engine
-            foreach (self::$cache_conf as $type => $conf) {
+            $cache_conf = &core::$conf['cache'];
+            foreach ($cache_conf as $type => $conf) {
                 // default cache is first cache conf key
                 if ($default_is_null) {
                     $default_cache = $type;
@@ -59,7 +52,7 @@ class CACHE
                 $cache_enigne                = $type . '_cache';
                 self::$cache_type            = $type;
                 self::$cache_pre             = isset($conf['pre']) ? $conf['pre'] : '';
-                self::$instance[$cache_name] = new $cache_enigne($conf);
+                self::$instance[$cache_name] = new $cache_enigne($cache_conf[$type]);
                 if (self::$instance[$cache_name]->init()) {
                     return self::$instance[$cache_name];
                 }
